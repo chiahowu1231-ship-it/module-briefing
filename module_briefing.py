@@ -7,7 +7,7 @@ MODULE INDUSTRY BRIEFING
 
 import os, re, smtplib, time, random, feedparser
 import urllib.request, urllib.error
-import google.generativeai as genai
+from google import genai
 from datetime import datetime, timedelta, timezone
 from html import escape
 from email.mime.text import MIMEText
@@ -382,10 +382,11 @@ LINK: <照抄>
 {payload}
 """.strip()
 
-def call_gemini(model, prompt):
+def call_gemini(client, prompt):
     for attempt in range(1, GEMINI_RETRIES+1):
         try:
-            return getattr(model.generate_content(prompt, request_options={"timeout":GEMINI_TIMEOUT}), "text","") or ""
+            resp = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+            return resp.text or ""
         except Exception as e:
             if not any(k in str(e) for k in ["429","500","503","504","timeout","Timed out"]) or attempt==GEMINI_RETRIES: raise
             time.sleep(min(2**attempt,30)+random.random())
@@ -513,8 +514,7 @@ def render_html(items, stats=None):
 # ==========================================================
 def generate_report(items, stats=None, title_map=None):
     if not GEMINI_API_KEY: return "錯誤：缺少 GEMINI_API_KEY"
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    client = genai.Client(api_key=GEMINI_API_KEY)
     all_parsed = []
 
     for start in range(0, len(items), BATCH_SIZE):
@@ -522,7 +522,7 @@ def generate_report(items, stats=None, title_map=None):
         bn = start//BATCH_SIZE+1
         print(f"  Batch {bn}: {start+1}~{start+len(batch)}")
         try:
-            parsed = parse_ai(call_gemini(model, make_prompt(build_payload(batch))))
+            parsed = parse_ai(call_gemini(client, make_prompt(build_payload(batch))))
             if not parsed:
                 for it in batch:
                     all_parsed.append({"item_id":str(it["id"]),"category":it["cat"],"title_zh":it.get("title_orig",""),
