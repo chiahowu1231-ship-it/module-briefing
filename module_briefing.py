@@ -1,9 +1,12 @@
 """
 MODULE INDUSTRY BRIEFING
 全球模組產業日報 — 5G / RF / IoT / ODM 供應鏈每日情報
+
+當 RSS snippet 內容不足時，自動抓取原文網頁擷取內文，確保 AI 摘要基於實際內容。
 """
 
 import os, re, smtplib, time, random, feedparser
+import urllib.request, urllib.error
 import google.generativeai as genai
 from datetime import datetime, timedelta, timezone
 from html import escape
@@ -28,6 +31,11 @@ GEMINI_TIMEOUT    = int(os.getenv("GEMINI_TIMEOUT_SEC", "120"))
 GEMINI_RETRIES    = int(os.getenv("GEMINI_MAX_RETRIES", "4"))
 ALLOW_UNKNOWN_DATE = False
 
+# 內文擷取設定
+ENRICH_MIN_CHARS  = int(os.getenv("ENRICH_MIN_CHARS", "120"))   # snippet 低於此字數就去抓原文
+ENRICH_TIMEOUT    = int(os.getenv("ENRICH_TIMEOUT", "10"))       # 每頁抓取 timeout (秒)
+ENRICH_MAX_ITEMS  = int(os.getenv("ENRICH_MAX_ITEMS", "50"))     # 最多抓幾篇原文
+
 # ==========================================================
 # 來源定義
 # ==========================================================
@@ -42,6 +50,7 @@ NEWS_SOURCES = {
     "Electronics Weekly 5G":  ("https://www.electronicsweekly.com/search/5G/feed/rss2", "CAT1"),
     "Semiconductor Eng.":     ("https://semiengineering.com/feed/", "CAT1"),
     "FierceElectronics":      ("https://www.fierceelectronics.com/rss/xml", "CAT1"),
+    "Embedded.com":           ("https://www.embedded.com/feed/", "CAT1"),
 
     # ━━━ CAT2: 產業趨勢與營運商 ━━━
     "Fierce Wireless":        ("https://www.fiercewireless.com/rss/xml", "CAT2"),
@@ -51,16 +60,30 @@ NEWS_SOURCES = {
     "Telecoms.com":           ("https://telecoms.com/feed/", "CAT2"),
     "SDxCentral":             ("https://www.sdxcentral.com/feed/", "CAT2"),
     "Capacity Media":         ("https://www.capacitymedia.com/rss", "CAT2"),
-    "IoT Analytics":          ("https://iot-analytics.com/feed/", "CAT2"),
+    # 台灣供應鏈媒體
+    "經濟日報 科技":           ("https://money.udn.com/rssfeed/news/1001/5591/12925", "CAT2"),
+    "工商時報 科技":           ("https://ctee.com.tw/feed", "CAT2"),
+    "科技新報 TechNews":      ("https://technews.tw/feed/", "CAT2"),
 
-    # ━━━ CAT3: 競爭對手動態 ━━━
-    "Counterpoint IoT":       ("https://www.counterpointresearch.com/insights/feed/", "CAT3"),
+    # ━━━ CAT3: 競爭對手動態 (ODM / 模組廠) ━━━
     "Digitimes":              ("https://www.digitimes.com/rss/rss.asp", "CAT3"),
+    # 全球模組五強
     "Quectel News":           ("https://www.quectel.com/news/feed/", "CAT3"),
     "Fibocom Blog":           ("https://www.fibocom.com/en/blog/feed/", "CAT3"),
-    "Sierra Wireless":        ("https://www.sierrawireless.com/resources/blog/feed/", "CAT3"),
     "Telit Cinterion":        ("https://www.telit.com/blog/feed/", "CAT3"),
     "u-blox News":            ("https://www.u-blox.com/en/newsroom/rss.xml", "CAT3"),
+    "Semtech (Sierra)":       ("https://www.sierrawireless.com/resources/blog/feed/", "CAT3"),
+    # 車載模組
+    "Rolling Wireless":       ("https://www.rollingwireless.com/en/news/feed", "CAT3"),
+    "Kontron IoT":            ("https://www.kontron.com/en/blog/rss", "CAT3"),
+    # 中國模組廠
+    "China Mobile IoT":       ("https://www.chinamobileltd.com/en/ir/press_rss.xml", "CAT3"),
+    "SIMCom News":            ("https://www.simcom.com/news/feed", "CAT3"),
+    "MeiG Smart":             ("https://www.meiglink.com/en/news/feed", "CAT3"),
+    "Neoway News":            ("https://www.neoway.com/en/news/feed", "CAT3"),
+    # 產業媒體（模組/IoT 專題）
+    "IoT World Today":        ("https://www.iotworldtoday.com/feed", "CAT3"),
+    "IoT For All":            ("https://www.iotforall.com/feed", "CAT3"),
 
     # ━━━ CAT4: 關鍵元件供應商 ━━━
     "Qualcomm OnQ":           ("https://www.qualcomm.com/news/onq/feed/rss", "CAT4"),
@@ -77,24 +100,40 @@ NEWS_SOURCES = {
     "ETSI":                   ("https://www.etsi.org/newsroom/rss", "CAT5"),
     "Wi-Fi Alliance":         ("https://www.wi-fi.org/news-events/newsroom/feed", "CAT5"),
     "GSMA News":              ("https://www.gsma.com/newsroom/rss/", "CAT5"),
+
+    # ━━━ CAT6: 市場研究與分析機構 ━━━
+    "TrendForce":             ("https://www.trendforce.com/presscenter/rss/news.xml", "CAT6"),
+    "TrendForce 中文":         ("https://www.trendforce.com.tw/presscenter/rss/news.xml", "CAT6"),
+    "TechInsights Blog":      ("https://www.techinsights.com/blog/feed", "CAT6"),
+    "ABI Research":           ("https://www.abiresearch.com/press/feed/", "CAT6"),
+    "Yole Intelligence":      ("https://www.yolegroup.com/feed/", "CAT6"),
+    "Dell'Oro Group":         ("https://www.delloro.com/feed/", "CAT6"),
+    "Omdia":                  ("https://omdia.tech.informa.com/rss/insights", "CAT6"),
+    "Counterpoint Research":  ("https://www.counterpointresearch.com/insights/feed/", "CAT6"),
+    "IoT Analytics":          ("https://iot-analytics.com/feed/", "CAT6"),
+    "IDC Blog":               ("https://blogs.idc.com/feed/", "CAT6"),
+    # 管理顧問 — 產業展望報告
+    "Deloitte TMT":           ("https://www.deloitte.com/us/en/insights/industry/technology.rss.xml", "CAT6"),
+    "McKinsey Tech":          ("https://www.mckinsey.com/industries/technology-media-and-telecommunications/our-insights/rss", "CAT6"),
+    "Gartner Newsroom":       ("https://www.gartner.com/en/newsroom/rss", "CAT6"),
+    "KPMG Tech":              ("https://kpmg.com/us/en/insights-by-topic/technology.rss.xml", "CAT6"),
 }
 
-# ==========================================================
-# 分類
-# ==========================================================
 CAT_META = {
     "CAT1": {"zh":"硬體技術與射頻","en":"RF & Baseband","color":"#818CF8","dark":"#312E81","light":"#EEF2FF",
-             "icon":"&#9889;","desc":"RFFE 整合 &middot; AiP 封裝 &middot; 信號完整性 &middot; 電路設計"},
+             "icon":"&#9889;","desc":"RFFE 整合 &middot; AiP 封裝 &middot; 信號完整性 &middot; 嵌入式系統 &middot; 電路設計"},
     "CAT2": {"zh":"產業趨勢與營運商","en":"Operators & Trends","color":"#22D3EE","dark":"#164E63","light":"#ECFEFF",
-             "icon":"&#127758;","desc":"5G 部署 &middot; 頻段規劃 &middot; 電信策略 &middot; 市場預測"},
+             "icon":"&#127758;","desc":"5G 部署 &middot; 頻段規劃 &middot; 電信策略 &middot; 台灣供應鏈 &middot; 市場預測"},
     "CAT3": {"zh":"競爭對手動態","en":"ODM & Module Vendors","color":"#F87171","dark":"#7F1D1D","light":"#FEF2F2",
-             "icon":"&#127981;","desc":"模組廠新品 &middot; 市佔率 &middot; 設計案 &middot; 併購"},
+             "icon":"&#127981;","desc":"Quectel &middot; China Mobile IoT &middot; Fibocom &middot; Telit &middot; Rolling Wireless &middot; SIMCom &middot; MeiG &middot; ODM"},
     "CAT4": {"zh":"關鍵元件供應商","en":"Key Components","color":"#34D399","dark":"#064E3B","light":"#ECFDF5",
              "icon":"&#128268;","desc":"晶片 Roadmap &middot; RFFE &middot; 被動元件 &middot; 基材"},
     "CAT5": {"zh":"標準與規範","en":"Standards & Spectrum","color":"#FBBF24","dark":"#78350F","light":"#FFFBEB",
              "icon":"&#128220;","desc":"3GPP Release &middot; 頻譜拍賣 &middot; 認證法規"},
+    "CAT6": {"zh":"市場研究與分析","en":"Market Research","color":"#EC4899","dark":"#831843","light":"#FDF2F8",
+             "icon":"&#128202;","desc":"TrendForce &middot; TechInsights &middot; IDC &middot; Counterpoint &middot; Omdia &middot; Deloitte &middot; McKinsey &middot; Gartner &middot; KPMG"},
 }
-CAT_ORDER = ["CAT1","CAT2","CAT3","CAT4","CAT5"]
+CAT_ORDER = ["CAT6","CAT2","CAT3","CAT1","CAT4","CAT5"]
 
 # ==========================================================
 # 預篩
@@ -104,6 +143,9 @@ EXCLUDE_KW = ["celebrity","red carpet","Grammy","Oscar","box office","movie revi
 PRIORITY_KW = ["5G","6G","LTE","RedCap","NR","modem","RFFE","RF front","antenna","AiP",
                "mmWave","sub-6","CA ","EN-DC","DSS","FDD","TDD","OFDM","MIMO","beamforming",
                "module","modul","ODM","OEM","Quectel","Fibocom","Sierra","Telit","u-blox",
+               "Rolling Wireless","Kontron","SIMCom","MeiG","美格","Neoway","Gosuncn",
+               "Sunsea","Longsung","龍旗","華勤","SG Wireless","Trasna","Eagle Electronics",
+               "China Mobile IoT","中國移動","中移物聯",
                "Qualcomm","Snapdragon","MediaTek","Dimensity","Helio",
                "Qorvo","Skyworks","Murata","MLCC","filter","duplexer","PA ","LNA",
                "3GPP","Release 18","Release 19","Rel-18","Rel-19","5G-Advanced",
@@ -111,7 +153,11 @@ PRIORITY_KW = ["5G","6G","LTE","RedCap","NR","modem","RFFE","RF front","antenna"
                "PCB","laminate","Rogers","substrate","packaging","SiP","SoC",
                "Compal","仁寶","Pegatron","和碩","Wistron","緯創","Foxconn","鴻海",
                "Samsung","semiconductor","半導體","wafer","foundry","TSMC","台積電",
-               "Digitimes","電子時報","Counterpoint","TechInsights","teardown"]
+               "Digitimes","電子時報","Counterpoint","TechInsights","teardown",
+               "TrendForce","集邦","Omdia","ABI Research","Yole","Dell'Oro","IDC",
+               "Deloitte","McKinsey","Gartner","KPMG",
+               "經濟日報","工商時報","科技新報","TechNews","embedded","RTOS",
+               "market share","forecast","shipment","revenue"]
 
 def _should_exclude(title, snippet):
     text = (title+" "+snippet).lower()
@@ -120,6 +166,78 @@ def _should_exclude(title, snippet):
     for kw in EXCLUDE_KW:
         if kw.lower() in text: return True
     return False
+
+
+# ==========================================================
+# 原文擷取：當 RSS snippet 太短時，去網頁抓內文
+# ==========================================================
+_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+
+def _fetch_article_text(url, timeout=ENRICH_TIMEOUT):
+    """抓取網頁，擷取 <p> 段落內文，回傳純文字。"""
+    if not url:
+        return ""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": _UA, "Accept": "text/html"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            # 只處理 HTML
+            ct = resp.headers.get("Content-Type", "")
+            if "html" not in ct.lower():
+                return ""
+            raw = resp.read(500_000)  # 最多讀 500KB
+            # 嘗試偵測編碼
+            charset = "utf-8"
+            if "charset=" in ct:
+                charset = ct.split("charset=")[-1].strip().split(";")[0]
+            html_text = raw.decode(charset, errors="replace")
+
+        # 擷取 <article> 或 <main> 區塊（如有）
+        article_match = re.search(r'<article[^>]*>(.*?)</article>', html_text, re.DOTALL | re.IGNORECASE)
+        main_match = re.search(r'<main[^>]*>(.*?)</main>', html_text, re.DOTALL | re.IGNORECASE)
+        search_zone = article_match.group(1) if article_match else (main_match.group(1) if main_match else html_text)
+
+        # 提取所有 <p> 標籤內容
+        paragraphs = re.findall(r'<p[^>]*>(.*?)</p>', search_zone, re.DOTALL | re.IGNORECASE)
+        if not paragraphs:
+            return ""
+
+        # 清除 HTML tags + 合併
+        clean_parts = []
+        for p in paragraphs:
+            text = re.sub(r'<[^>]+>', '', p).strip()
+            text = re.sub(r'\s+', ' ', text)
+            # 過濾太短的段落（通常是按鈕文字或 UI 元素）
+            if len(text) > 30:
+                clean_parts.append(text)
+
+        return " ".join(clean_parts)[:2000]  # 最多 2000 字元
+
+    except Exception:
+        return ""
+
+
+def enrich_short_snippets(items):
+    """對 snippet 字數不足的項目，去抓原文網頁補充內容。"""
+    to_enrich = [(i, it) for i, it in enumerate(items) if len(it.get("snippet","")) < ENRICH_MIN_CHARS and it.get("link")]
+    if not to_enrich:
+        return
+
+    count = min(len(to_enrich), ENRICH_MAX_ITEMS)
+    print(f"  📄 {count}/{len(to_enrich)} items need full-text fetch (snippet < {ENRICH_MIN_CHARS} chars)...")
+    fetched = 0
+
+    for idx, (i, it) in enumerate(to_enrich[:count]):
+        url = it["link"]
+        text = _fetch_article_text(url)
+        if text and len(text) > len(it.get("snippet","")):
+            items[i]["snippet"] = text[:2000]
+            fetched += 1
+        # 禮貌延遲，避免被封
+        if idx < count - 1:
+            time.sleep(0.5)
+
+    print(f"  📄 Enriched {fetched}/{count} articles with full text")
+
 
 # ==========================================================
 # 抓新聞
@@ -151,6 +269,24 @@ def _entry_dt(entry):
             if dt: return dt
     return None
 
+def _extract_rss_content(entry):
+    """從 RSS entry 中盡可能多地擷取內文。"""
+    for field in ("content", "summary", "description"):
+        val = getattr(entry, field, None)
+        if isinstance(val, list) and val:
+            raw = val[0].get("value","") if isinstance(val[0], dict) else str(val[0])
+        elif isinstance(val, str) and val:
+            raw = val
+        else:
+            continue
+        if raw:
+            text = re.sub(r'<[^>]+>', ' ', raw).strip()
+            text = re.sub(r'\s+', ' ', text)
+            if text:
+                return text
+    return ""
+
+
 def fetch_news(per_limit=PER_SOURCE_LIMIT):
     now = datetime.now(TZ_TAIPEI)
     cutoff = now.replace(hour=0,minute=0,second=0,microsecond=0) - timedelta(days=1)
@@ -165,7 +301,7 @@ def fetch_news(per_limit=PER_SOURCE_LIMIT):
             feed = feedparser.parse(url)
             for entry in (getattr(feed,'entries',[]) or [])[:per_limit]:
                 title = (getattr(entry,"title","") or "").strip()
-                summary = (getattr(entry,"summary","") or "").strip()
+                summary = _extract_rss_content(entry)
                 link = (getattr(entry,"link","") or "").strip()
                 dt = _entry_dt(entry)
                 if dt is None:
@@ -179,7 +315,7 @@ def fetch_news(per_limit=PER_SOURCE_LIMIT):
                 seen.add(key)
                 if _should_exclude(title, summary): stats["filtered"]+=1; continue
                 items.append({"id":iid,"source":name,"cat":cat,"title_orig":title,
-                              "snippet":summary[:500],"link":link,"published":pub})
+                              "snippet":summary[:2000],"link":link,"published":pub})
                 iid+=1; kept+=1
             stats["per_source"][name]=kept; stats["kept"]+=kept
         except Exception as e:
@@ -188,11 +324,13 @@ def fetch_news(per_limit=PER_SOURCE_LIMIT):
     print(f"  ✅ {stats['kept']} kept, {stats['filtered']} filtered")
     return items, stats
 
+
 def build_payload(items):
     return "\n\n".join(
         f"<<<ITEM {it['id']}>>>\nSOURCE: {it['source']}\nCAT: {it['cat']}\n"
         f"TITLE: {it['title_orig']}\nPUBLISHED: {it['published']}\nLINK: {it['link']}\n"
         f"SNIPPET: {it['snippet']}\n<<<END>>>" for it in items)
+
 
 # ==========================================================
 # AI
@@ -217,21 +355,25 @@ def make_prompt(payload):
 
 【規則】
 1) 每個 ITEM 各寫一條摘要，禁止合併。保留 ITEM / SOURCE / PUBLISHED / LINK。
-2) 分類五擇一：
+2) 分類六擇一：
    - CAT1：硬體技術與射頻 — RF/BB 設計、AiP 封裝、信號完整性
    - CAT2：產業趨勢與營運商 — 5G 部署、頻段規劃、市場預測
-   - CAT3：競爭對手動態 — ODM/模組廠新品、市佔率、併購
+   - CAT3：競爭對手動態 — 模組廠（Quectel/China Mobile IoT/Fibocom/Telit/SIMCom/MeiG/Rolling Wireless等）新品、市佔率、併購、設計案
    - CAT4：關鍵元件供應商 — 晶片/RFFE/被動元件新品與 Roadmap
    - CAT5：標準與規範 — 3GPP Release、頻譜拍賣、認證法規
-3) 摘要 2-3 句繁體中文，專業術語保留英文（RFFE, CA, EN-DC, RedCap, mmWave）。
-4) 資訊不足寫「資訊不足」。禁止編造日期。
-5) 娛樂/體育/政治（無產業影響）寫「資訊不足」。
+   - CAT6：市場研究與分析 — 市調機構報告、管理顧問產業展望、產業預測、市佔率數據、拆解分析
+3) 摘要 2-3 句繁體中文，**必須根據 SNIPPET 中的實際內容撰寫**，專業術語保留英文。
+4) 禁止自行編造未出現在 SNIPPET 中的數字、日期或事實。
+5) 如果 SNIPPET 有充足內容（超過一兩句），請提取關鍵事實寫成摘要。
+6) 如果 SNIPPET 內容極短或完全為空（只有一個標題），寫「資訊不足，請點擊原文閱讀」。
+   不要用標題去猜測或推測文章內容。
+7) 明確為娛樂/體育/名人八卦等與產業無關的主題，寫「非本產業相關」。
 
 【格式（--- 分隔）】
 ITEM: <數字>
-CATEGORY: <CAT1|CAT2|CAT3|CAT4|CAT5>
+CATEGORY: <CAT1|CAT2|CAT3|CAT4|CAT5|CAT6>
 TITLE_ZH: <繁中標題>
-SUMMARY: <2-3句>
+SUMMARY: <2-3句，基於 SNIPPET 實際內容>
 SOURCE: <照抄>
 PUBLISHED: <照抄>
 LINK: <照抄>
@@ -250,19 +392,16 @@ def call_gemini(model, prompt):
 
 
 # ==========================================================
-# ██ 專業科技電子報 HTML ██
+# 專業科技電子報 HTML
 # ==========================================================
-# 設計原則：
-#   - 深色系 header（科技感）
-#   - 分類區塊帶有色彩系統（左側色條 + 淡色底 section header）
-#   - 新聞卡片有明確邊框，標題/摘要/metadata 三層式排版
-#   - 來源標籤為 pill badge，連結為獨立按鈕
-#   - 全部 table-based 確保 Gmail/Outlook 相容
-# ==========================================================
-
 def render_html(items, stats=None):
+    SKIP = ["資訊不足", "非本產業相關", "非本產業", "與產業無關"]
     grouped = {c:[] for c in CAT_ORDER}
+    skipped = 0
     for it in items:
+        summ = it.get("summary","").strip()
+        if any(p in summ for p in SKIP):
+            skipped += 1; continue
         c = it.get("category","").strip()
         if c not in grouped: c = "CAT2"
         grouped[c].append(it)
@@ -273,166 +412,98 @@ def render_html(items, stats=None):
     active_src = sum(1 for n in (stats or {}).get("per_source",{}).values() if n>0)
     filtered = (stats or {}).get("filtered", 0)
 
-    # ── 共用色碼 ──
-    BG_PAGE     = "#0B0F19"   # 深黑底（頁面背景）
-    BG_CARD     = "#FFFFFF"
-    BG_SECTION  = "#F8FAFC"
-    TEXT_PRIMARY = "#0F172A"
-    TEXT_SECOND  = "#64748B"
-    TEXT_MUTED   = "#94A3B8"
-    BORDER       = "#E2E8F0"
-    ACCENT       = "#38BDF8"  # 科技藍
+    BG_PAGE="#0B0F19"; BG_CARD="#FFFFFF"; TEXT_P="#0F172A"; TEXT_S="#64748B"; TEXT_M="#94A3B8"
+    BORDER="#E2E8F0"; ACCENT="#38BDF8"
 
     h = []
-
-    # ── Outer wrapper ──
     h.append(f"<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width'></head>")
     h.append(f"<body style='margin:0;padding:0;background:{BG_PAGE};'>")
     h.append(f"<table width='100%' cellpadding='0' cellspacing='0' style='background:{BG_PAGE};'><tr><td align='center' style='padding:20px 8px;'>")
     h.append(f"<table width='640' cellpadding='0' cellspacing='0' style='background:{BG_CARD};border-radius:12px;overflow:hidden;"
              f"font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,sans-serif;'>")
 
-    # ═══════════════════════════════════════════════
-    # HEADER — 深色科技漸層 + 品牌名 + 日期
-    # ═══════════════════════════════════════════════
+    # ═══ HEADER ═══
     h.append(f"<tr><td style='background:linear-gradient(160deg,#0F172A 0%,#1E293B 50%,#0F172A 100%);padding:0;'>")
-    # 頂部裝飾線
     h.append(f"<div style='height:3px;background:linear-gradient(90deg,{ACCENT},#818CF8,#A78BFA);'></div>")
     h.append(f"<table width='100%' cellpadding='0' cellspacing='0'><tr><td style='padding:26px 32px 10px;'>")
-    # Logo line
     h.append(f"<table width='100%' cellpadding='0' cellspacing='0'><tr>")
-    h.append(f"<td><div style='font-size:11px;font-weight:700;color:{ACCENT};letter-spacing:3px;text-transform:uppercase;'>Module Industry</div>"
-             f"<div style='font-size:24px;font-weight:800;color:#FFFFFF;letter-spacing:0.5px;margin-top:2px;'>BRIEFING</div></td>")
-    h.append(f"<td align='right' valign='top'>"
-             f"<div style='font-size:36px;font-weight:800;color:#FFFFFF;line-height:1;letter-spacing:-1px;'>{now:%m.%d}</div>"
-             f"<div style='font-size:11px;color:{TEXT_MUTED};text-align:right;margin-top:2px;'>星期{wd} {now:%H:%M} TPE</div></td>")
+    h.append(f"<td><div style='font-size:11px;font-weight:700;color:{ACCENT};letter-spacing:3px;'>MODULE INDUSTRY</div>"
+             f"<div style='font-size:24px;font-weight:800;color:#FFF;margin-top:2px;'>BRIEFING</div></td>")
+    h.append(f"<td align='right' valign='top'><div style='font-size:36px;font-weight:800;color:#FFF;line-height:1;letter-spacing:-1px;'>{now:%m.%d}</div>"
+             f"<div style='font-size:11px;color:{TEXT_M};text-align:right;margin-top:2px;'>星期{wd} {now:%H:%M} TPE</div></td>")
     h.append(f"</tr></table>")
-    # Tagline
     h.append(f"<div style='margin-top:14px;padding-top:12px;border-top:1px solid #334155;'>"
-             f"<span style='font-size:12px;color:#CBD5E1;letter-spacing:0.3px;'>"
-             f"5G &middot; RF/BB &middot; IoT Module &middot; ODM Supply Chain &middot; Component Roadmap</span></div>")
+             f"<span style='font-size:12px;color:#CBD5E1;'>5G &middot; RF/BB &middot; IoT Module &middot; ODM Supply Chain &middot; Component Roadmap</span></div>")
     h.append(f"</td></tr></table></td></tr>")
 
-    # ═══════════════════════════════════════════════
-    # EXECUTIVE SUMMARY BAR — 分類計數
-    # ═══════════════════════════════════════════════
+    # ═══ STATS BAR ═══
     h.append(f"<tr><td style='padding:16px 32px;background:#F1F5F9;border-bottom:1px solid {BORDER};'>")
-    h.append(f"<table width='100%' cellpadding='0' cellspacing='0'>")
-    # 第一行：分類 pills
-    h.append(f"<tr>")
+    h.append(f"<table width='100%' cellpadding='0' cellspacing='0'><tr>")
     for c in CAT_ORDER:
-        m = CAT_META[c]; cnt = len(grouped[c])
-        label = m["en"].split("&")[0].split("/")[0].strip()[:10]
-        h.append(f"<td align='center' style='padding:2px;'>"
-                 f"<span style='display:inline-block;background:{m['light']};color:{m['dark']};border:1px solid {m['color']}30;"
-                 f"font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;white-space:nowrap;'>"
-                 f"{label}&nbsp;&nbsp;<span style='color:{m['color']};'>{cnt}</span></span></td>")
-    h.append(f"</tr>")
-    # 第二行：統計
-    h.append(f"<tr><td colspan='5' style='padding-top:8px;text-align:center;'>"
-             f"<span style='font-size:10px;color:{TEXT_MUTED};'>"
-             f"&#9679; {active_src} active sources &nbsp;&nbsp;&#9679; {total} articles &nbsp;&nbsp;&#9679; {filtered} noise filtered"
-             f"</span></td></tr>")
-    h.append(f"</table></td></tr>")
+        m=CAT_META[c]; cnt=len(grouped[c]); lb=m["en"].split("&")[0].split("/")[0].strip()[:10]
+        h.append(f"<td align='center' style='padding:2px;'><span style='display:inline-block;background:{m['light']};color:{m['dark']};"
+                 f"border:1px solid {m['color']}30;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;white-space:nowrap;'>"
+                 f"{lb}&nbsp;<span style='color:{m['color']};'>{cnt}</span></span></td>")
+    h.append(f"</tr><tr><td colspan='5' style='padding-top:8px;text-align:center;'>"
+             f"<span style='font-size:10px;color:{TEXT_M};'>&#9679; {active_src} sources &nbsp;&#9679; {total} articles &nbsp;"
+             f"&#9679; {filtered + skipped} filtered</span></td></tr></table></td></tr>")
 
-    # ═══════════════════════════════════════════════
-    # SECTIONS — 每個分類
-    # ═══════════════════════════════════════════════
+    # ═══ SECTIONS ═══
     for c in CAT_ORDER:
         if not grouped[c]: continue
         m = CAT_META[c]
 
-        # ── Section header ──
-        h.append(f"<tr><td style='padding:0;'>")
-        h.append(f"<table width='100%' cellpadding='0' cellspacing='0' style='background:{m['light']};border-top:1px solid {BORDER};'>"
-                 f"<tr><td style='padding:16px 32px;'>"
-                 f"<table width='100%' cellpadding='0' cellspacing='0'><tr>")
-        # 左：色條 + 標題
-        h.append(f"<td style='border-left:4px solid {m['color']};padding-left:14px;'>"
-                 f"<div style='font-size:16px;font-weight:700;color:{TEXT_PRIMARY};line-height:1.3;'>{m['icon']}&nbsp;&nbsp;{m['zh']}</div>"
-                 f"<div style='font-size:11px;color:{TEXT_SECOND};margin-top:2px;'>{m['en']}</div></td>")
-        # 右：count + 描述
-        h.append(f"<td align='right' valign='top'>"
-                 f"<div style='font-size:20px;font-weight:800;color:{m['color']};line-height:1;'>{len(grouped[c])}</div>"
-                 f"<div style='font-size:10px;color:{TEXT_MUTED};'>articles</div></td>")
-        h.append(f"</tr></table>")
-        # 描述行
-        h.append(f"<div style='margin-top:8px;font-size:11px;color:{TEXT_MUTED};letter-spacing:0.2px;'>{m['desc']}</div>")
-        h.append(f"</td></tr></table></td></tr>")
+        h.append(f"<tr><td style='padding:0;'><table width='100%' cellpadding='0' cellspacing='0' style='background:{m['light']};border-top:1px solid {BORDER};'>"
+                 f"<tr><td style='padding:16px 32px;'><table width='100%' cellpadding='0' cellspacing='0'><tr>"
+                 f"<td style='border-left:4px solid {m['color']};padding-left:14px;'>"
+                 f"<div style='font-size:16px;font-weight:700;color:{TEXT_P};line-height:1.3;'>{m['icon']}&nbsp;&nbsp;{m['zh']}</div>"
+                 f"<div style='font-size:11px;color:{TEXT_S};margin-top:2px;'>{m['en']}</div></td>"
+                 f"<td align='right' valign='top'><div style='font-size:20px;font-weight:800;color:{m['color']};line-height:1;'>{len(grouped[c])}</div>"
+                 f"<div style='font-size:10px;color:{TEXT_M};'>articles</div></td>"
+                 f"</tr></table><div style='margin-top:8px;font-size:11px;color:{TEXT_M};'>{m['desc']}</div>"
+                 f"</td></tr></table></td></tr>")
 
-        # ── News cards ──
         for idx, it in enumerate(grouped[c]):
-            tzh = escape(it.get("title_zh",""))
-            torig = escape(it.get("title_orig",""))
-            summ = escape(it.get("summary",""))
-            src = escape(it.get("source",""))
-            pub = escape(it.get("published",""))
-            lnk = (it.get("link") or "").strip()
+            tzh=escape(it.get("title_zh","")); torig=escape(it.get("title_orig",""))
+            summ=escape(it.get("summary","")); src=escape(it.get("source",""))
+            pub=escape(it.get("published","")); lnk=(it.get("link") or "").strip()
+            bg="#FAFBFC" if idx%2 else "#FFFFFF"
 
-            is_odd = idx % 2 == 1
-            card_bg = "#FAFBFC" if is_odd else "#FFFFFF"
+            h.append(f"<tr><td style='padding:0 32px;'><table width='100%' cellpadding='0' cellspacing='0' style='background:{bg};"
+                     f"border-bottom:1px solid #F1F5F9;'><tr><td width='4' style='background:{m['color']}20;'></td><td style='padding:16px 18px;'>")
 
-            h.append(f"<tr><td style='padding:0 32px;'>")
-            h.append(f"<table width='100%' cellpadding='0' cellspacing='0' style='background:{card_bg};"
-                     f"border-bottom:1px solid #F1F5F9;'><tr>")
-
-            # 左色條
-            h.append(f"<td width='4' style='background:{m['color']}20;'></td>")
-
-            # 內容
-            h.append(f"<td style='padding:16px 18px;'>")
-
-            # 標題
             if lnk:
                 h.append(f"<a href='{escape(lnk)}' target='_blank' style='text-decoration:none;'>"
-                         f"<div style='font-size:15px;font-weight:600;color:{TEXT_PRIMARY};line-height:1.45;'>{tzh}</div></a>")
+                         f"<div style='font-size:15px;font-weight:600;color:{TEXT_P};line-height:1.45;'>{tzh}</div></a>")
             else:
-                h.append(f"<div style='font-size:15px;font-weight:600;color:{TEXT_PRIMARY};line-height:1.45;'>{tzh}</div>")
+                h.append(f"<div style='font-size:15px;font-weight:600;color:{TEXT_P};line-height:1.45;'>{tzh}</div>")
 
-            # 原文標題
             if torig and torig != tzh:
-                h.append(f"<div style='font-size:11px;color:{TEXT_MUTED};margin-top:3px;line-height:1.4;font-style:italic;'>{torig}</div>")
+                h.append(f"<div style='font-size:11px;color:{TEXT_M};margin-top:3px;font-style:italic;'>{torig}</div>")
+            if summ:
+                h.append(f"<div style='font-size:13px;color:{TEXT_S};margin-top:8px;line-height:1.7;'>{summ}</div>")
 
-            # 摘要
-            if summ and summ != "資訊不足":
-                h.append(f"<div style='font-size:13px;color:{TEXT_SECOND};margin-top:8px;line-height:1.7;letter-spacing:0.1px;'>{summ}</div>")
-
-            # Metadata: source pill + time + read link
-            h.append(f"<table cellpadding='0' cellspacing='0' style='margin-top:10px;'><tr>")
-            # source pill
-            h.append(f"<td><span style='display:inline-block;background:{m['light']};color:{m['dark']};border:1px solid {m['color']}25;"
-                     f"font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;'>{src}</span></td>")
-            # time
-            h.append(f"<td style='padding-left:8px;'><span style='font-size:11px;color:{TEXT_MUTED};'>{pub}</span></td>")
-            # read link
+            h.append(f"<table cellpadding='0' cellspacing='0' style='margin-top:10px;'><tr>"
+                     f"<td><span style='display:inline-block;background:{m['light']};color:{m['dark']};border:1px solid {m['color']}25;"
+                     f"font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;'>{src}</span></td>"
+                     f"<td style='padding-left:8px;'><span style='font-size:11px;color:{TEXT_M};'>{pub}</span></td>")
             if lnk:
-                h.append(f"<td style='padding-left:12px;'>"
-                         f"<a href='{escape(lnk)}' target='_blank' style='display:inline-block;font-size:10px;font-weight:700;"
-                         f"color:{m['color']};text-decoration:none;background:{m['color']}10;padding:2px 10px;border-radius:4px;"
-                         f"border:1px solid {m['color']}30;'>READ &#8594;</a></td>")
-            h.append(f"</tr></table>")
+                h.append(f"<td style='padding-left:12px;'><a href='{escape(lnk)}' target='_blank' style='display:inline-block;font-size:10px;"
+                         f"font-weight:700;color:{m['color']};text-decoration:none;background:{m['color']}10;padding:2px 10px;"
+                         f"border-radius:4px;border:1px solid {m['color']}30;'>READ &#8594;</a></td>")
+            h.append(f"</tr></table></td></tr></table></td></tr>")
 
-            h.append(f"</td></tr></table></td></tr>")
-
-        # Section 結束間距
         h.append(f"<tr><td style='height:4px;'></td></tr>")
 
-    # ═══════════════════════════════════════════════
-    # FOOTER
-    # ═══════════════════════════════════════════════
-    h.append(f"<tr><td style='background:#F8FAFC;padding:20px 32px;border-top:1px solid {BORDER};'>")
-    # Top line decoration
-    h.append(f"<div style='text-align:center;margin-bottom:12px;'>"
-             f"<span style='display:inline-block;width:60px;height:2px;background:linear-gradient(90deg,{ACCENT},#818CF8);border-radius:1px;'></span></div>")
-    h.append(f"<div style='text-align:center;font-size:11px;color:{TEXT_MUTED};line-height:1.8;'>"
-             f"<b style='color:{TEXT_SECOND};'>MODULE INDUSTRY BRIEFING</b><br>"
-             f"Powered by Gemini AI &middot; {active_src} RSS sources &middot; Updated {now:%Y-%m-%d %H:%M} TPE<br>"
-             f"此為自動產生之每日產業摘要，僅供內部參考，不構成投資建議。</div>")
-    h.append(f"</td></tr>")
-
-    # Bottom gradient line
+    # ═══ FOOTER ═══
+    h.append(f"<tr><td style='background:#F8FAFC;padding:20px 32px;border-top:1px solid {BORDER};'>"
+             f"<div style='text-align:center;margin-bottom:12px;'>"
+             f"<span style='display:inline-block;width:60px;height:2px;background:linear-gradient(90deg,{ACCENT},#818CF8);border-radius:1px;'></span></div>"
+             f"<div style='text-align:center;font-size:11px;color:{TEXT_M};line-height:1.8;'>"
+             f"<b style='color:{TEXT_S};'>MODULE INDUSTRY BRIEFING</b><br>"
+             f"Powered by Gemini AI &middot; {active_src} sources &middot; {filtered} pre-filtered &middot; {skipped} off-topic removed<br>"
+             f"此為自動產生之每日產業摘要，僅供內部參考。</div></td></tr>")
     h.append(f"<tr><td><div style='height:3px;background:linear-gradient(90deg,{ACCENT},#818CF8,#A78BFA);'></div></td></tr>")
-
     h.append(f"</table></td></tr></table></body></html>")
     return "\n".join(h)
 
@@ -444,7 +515,7 @@ def generate_report(items, stats=None, title_map=None):
     if not GEMINI_API_KEY: return "錯誤：缺少 GEMINI_API_KEY"
     genai.configure(api_key=GEMINI_API_KEY)
     model = genai.GenerativeModel("gemini-2.5-flash")
-    all_parsed, errors = [], []
+    all_parsed = []
 
     for start in range(0, len(items), BATCH_SIZE):
         batch = items[start:start+BATCH_SIZE]
@@ -455,7 +526,7 @@ def generate_report(items, stats=None, title_map=None):
             if not parsed:
                 for it in batch:
                     all_parsed.append({"item_id":str(it["id"]),"category":it["cat"],"title_zh":it.get("title_orig",""),
-                                       "summary":"（解析失敗）","source":it.get("source",""),
+                                       "summary":"（解析失敗，請點擊原文閱讀）","source":it.get("source",""),
                                        "published":it.get("published",""),"link":it.get("link","")})
             else:
                 all_parsed.extend(parsed)
@@ -471,6 +542,7 @@ def generate_report(items, stats=None, title_map=None):
                 it["title_orig"] = title_map.get(str(it.get("item_id","")), "")
 
     return render_html(all_parsed, stats=stats)
+
 
 # ==========================================================
 # Email
@@ -494,9 +566,14 @@ def send_email(html_body):
     except Exception as e:
         print(f"❌ {e}")
 
+
 # ==========================================================
 if __name__ == "__main__":
     items, stats = fetch_news()
+
+    # ✅ 關鍵步驟：對內容不足的項目，去抓網頁原文
+    enrich_short_snippets(items)
+
     if MAX_TOTAL_ITEMS > 0 and len(items) > MAX_TOTAL_ITEMS:
         items = items[:MAX_TOTAL_ITEMS]
     if not items:
