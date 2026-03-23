@@ -5,9 +5,12 @@ MODULE INDUSTRY BRIEFING
 當 RSS snippet 內容不足時，自動抓取原文網頁擷取內文，確保 AI 摘要基於實際內容。
 """
 
-import os, re, smtplib, time, random, feedparser
+import os, re, smtplib, time, random, socket, feedparser
 import urllib.request, urllib.error
 from google import genai
+
+# ✅ 全域 socket timeout（防止 feedparser / urllib 無限掛住）
+socket.setdefaulttimeout(15)
 from datetime import datetime, timedelta, timezone
 from html import escape
 from email.mime.text import MIMEText
@@ -295,11 +298,14 @@ def fetch_news(per_limit=PER_SOURCE_LIMIT):
     items, iid, seen = [], 1, set()
     stats = {"generated_at":f"{now:%Y-%m-%d %H:%M %z}","kept":0,"filtered":0,"per_source":{}}
 
-    for name,(url,cat) in NEWS_SOURCES.items():
+    for idx_src, (name,(url,cat)) in enumerate(NEWS_SOURCES.items()):
         kept = 0
+        print(f"  [{idx_src+1}/{len(NEWS_SOURCES)}] {name}...", end=" ", flush=True)
         try:
             feed = feedparser.parse(url)
-            for entry in (getattr(feed,'entries',[]) or [])[:per_limit]:
+            entries = (getattr(feed,'entries',[]) or [])
+            print(f"{len(entries)} entries", flush=True)
+            for entry in entries[:per_limit]:
                 title = (getattr(entry,"title","") or "").strip()
                 summary = _extract_rss_content(entry)
                 link = (getattr(entry,"link","") or "").strip()
@@ -319,7 +325,7 @@ def fetch_news(per_limit=PER_SOURCE_LIMIT):
                 iid+=1; kept+=1
             stats["per_source"][name]=kept; stats["kept"]+=kept
         except Exception as e:
-            print(f"  ⚠️ {name}: {e}"); stats["per_source"][name]=0
+            print(f"⚠️ FAILED: {e}", flush=True); stats["per_source"][name]=0
 
     print(f"  ✅ {stats['kept']} kept, {stats['filtered']} filtered")
     return items, stats
