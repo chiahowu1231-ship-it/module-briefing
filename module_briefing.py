@@ -54,15 +54,26 @@ NEWS_SOURCES = {
     "Semiconductor Eng.":     ("https://semiengineering.com/feed/", "CAT1"),
     "FierceElectronics":      ("https://www.fierceelectronics.com/rss/xml", "CAT1"),
     "Embedded.com":           ("https://www.embedded.com/feed/", "CAT1"),
+    "TechBriefs RF":          ("https://www.techbriefs.com/rss/all", "CAT1"),
+    "EE Times Europe":        ("https://www.eetimes.eu/feed/", "CAT1"),
+    "Microwaves & RF":        ("https://www.mwrf.com/rss", "CAT1"),
 
     # ━━━ CAT2: 產業趨勢與營運商 ━━━
     "Fierce Wireless":        ("https://www.fiercewireless.com/rss/xml", "CAT2"),
+    "Fierce Network":         ("https://www.fierce-network.com/rss/xml", "CAT2"),
+    "6GWorld":                ("https://6gworld.com/feed", "CAT2"),
     "Light Reading":          ("https://www.lightreading.com/rss_simple", "CAT2"),
     "Mobile World Live":      ("https://www.mobileworldlive.com/feed/", "CAT2"),
     "RCR Wireless":           ("https://www.rcrwireless.com/feed", "CAT2"),
     "Telecoms.com":           ("https://telecoms.com/feed/", "CAT2"),
     "SDxCentral":             ("https://www.sdxcentral.com/feed/", "CAT2"),
     "Capacity Media":         ("https://www.capacitymedia.com/rss", "CAT2"),
+    "Total Telecom":          ("https://totaltele.com/feed/", "CAT2"),
+    "The Fast Mode":          ("https://www.thefastmode.com/feed", "CAT2"),
+    "5G Americas":            ("https://www.5gamericas.org/feed/", "CAT2"),
+    "5G-PPP":                 ("https://5g-ppp.eu/feed/", "CAT2"),
+    "M2M Now":                ("https://m2mnow.biz/feed/", "CAT2"),
+    "ConnectedWorld":         ("https://connectedworld.com/feed/", "CAT2"),
     # 台灣供應鏈媒體
     "經濟日報 科技":           ("https://money.udn.com/rssfeed/news/1001/5591/12925", "CAT2"),
     "工商時報 科技":           ("https://ctee.com.tw/feed", "CAT2"),
@@ -70,6 +81,14 @@ NEWS_SOURCES = {
 
     # ━━━ CAT3: 競爭對手動態 (ODM / 模組廠) ━━━
     "Digitimes":              ("https://www.digitimes.com/rss/rss.asp", "CAT3"),
+    # 韓國科技媒體
+    "ETNews (Korea)":         ("https://english.etnews.com/rss/allArticle.xml", "CAT3"),
+    "Pulse News Korea":       ("https://pulse.mk.co.kr/rss/", "CAT3"),
+    "The Elec":               ("https://www.thelec.net/rss/S1N3.xml", "CAT3"),
+    # 日本科技媒體
+    "EE Times Japan":         ("https://eetimes.itmedia.co.jp/rss/2.0/eetimes.xml", "CAT1"),
+    "Nikkei Asia Tech":       ("https://asia.nikkei.com/RSS/feed.aspx?t=technology", "CAT2"),
+    "NTT Technical Review":   ("https://www.ntt.com/en/journal/rss.xml", "CAT5"),
     # 全球模組五強
     "Quectel News":           ("https://www.quectel.com/news/feed/", "CAT3"),
     "Fibocom Blog":           ("https://www.fibocom.com/en/blog/feed/", "CAT3"),
@@ -87,6 +106,8 @@ NEWS_SOURCES = {
     # 產業媒體（模組/IoT 專題）
     "IoT World Today":        ("https://www.iotworldtoday.com/feed", "CAT3"),
     "IoT For All":            ("https://www.iotforall.com/feed", "CAT3"),
+    "IoT Now":                ("https://iot-now.com/feed/", "CAT3"),
+    "IoT Business News":      ("https://iotbusinessnews.com/feed/", "CAT3"),
 
     # ━━━ CAT4: 關鍵元件供應商 ━━━
     "Qualcomm OnQ":           ("https://www.qualcomm.com/news/onq/feed/rss", "CAT4"),
@@ -97,12 +118,25 @@ NEWS_SOURCES = {
     "TDK News":               ("https://www.tdk.com/en/news_center/press/rss", "CAT4"),
     "Keysight Blog":          ("https://blogs.keysight.com/feed/", "CAT4"),
     "Tom's Hardware":         ("https://www.tomshardware.com/feeds/all", "CAT4"),
+    # IoT 晶片 / 模組核心元件供應商
+    "Nordic Semiconductor":   ("https://www.nordicsemi.com/News?format=rss", "CAT4"),
+    "Sequans Comms":          ("https://www.sequans.com/press-releases/feed/", "CAT4"),
+    "Digi International":     ("https://www.digi.com/blog/rss", "CAT4"),
 
     # ━━━ CAT5: 標準與規範 ━━━
     "3GPP News":              ("https://www.3gpp.org/news-events/rss", "CAT5"),
     "ETSI":                   ("https://www.etsi.org/newsroom/rss", "CAT5"),
     "Wi-Fi Alliance":         ("https://www.wi-fi.org/news-events/newsroom/feed", "CAT5"),
     "GSMA News":              ("https://www.gsma.com/newsroom/rss/", "CAT5"),
+    # SEMI 官網無標準 RSS；改用 PR Newswire SEMI tag feed 作替代
+    "SEMI (PRN)":             ("https://www.prnewswire.com/rss/news-releases-list.rss?tagid=semi", "CAT5"),
+    # ESA 歐洲太空總署 — 衛星通訊 / NTN / 太空 IoT
+    "ESA Connectivity":       ("https://www.esa.int/rssfeed/Our_Activities/Connectivity_and_Secure_Communications", "CAT5"),
+    # Science|Business — EU Horizon 研發政策與資金動態（半導體/6G/IoT 計畫）
+    "Science|Business":       ("https://sciencebusiness.net/feed", "CAT5"),
+    # LPWAN 與短距離連接標準組織
+    "LoRa Alliance":          ("https://lora-alliance.org/feed/", "CAT5"),
+    "CSA (Matter/Zigbee)":    ("https://csa-iot.org/feed/", "CAT5"),
 
     # ━━━ CAT6: 市場研究與分析機構 ━━━
     "TrendForce":             ("https://www.trendforce.com/presscenter/rss/news.xml", "CAT6"),
@@ -112,7 +146,9 @@ NEWS_SOURCES = {
     "Yole Intelligence":      ("https://www.yolegroup.com/feed/", "CAT6"),
     "Dell'Oro Group":         ("https://www.delloro.com/feed/", "CAT6"),
     "Omdia":                  ("https://omdia.tech.informa.com/rss/insights", "CAT6"),
-    "Counterpoint Research":  ("https://www.counterpointresearch.com/insights/feed/", "CAT6"),
+    # Counterpoint Research — RSS 由程式動態決定（見 _try_counterpoint_rss）
+    # 此欄位僅作 placeholder，fetch_news 會攔截並走 fallback 流程
+    "Counterpoint Research":  ("__COUNTERPOINT_FALLBACK__", "CAT6"),
     "IoT Analytics":          ("https://iot-analytics.com/feed/", "CAT6"),
     "IDC Blog":               ("https://blogs.idc.com/feed/", "CAT6"),
     # 管理顧問 — 產業展望報告
@@ -143,7 +179,7 @@ CAT_ORDER = ["CAT6","CAT2","CAT3","CAT1","CAT4","CAT5"]
 # ==========================================================
 EXCLUDE_KW = ["celebrity","red carpet","Grammy","Oscar","box office","movie review",
               "Premier League","Champions League","NBA","NFL","FIFA","recipe","cooking"]
-PRIORITY_KW = ["5G","6G","LTE","RedCap","NR","modem","RFFE","RF front","antenna","AiP",
+PRIORITY_KW = ["5G","6G","LTE","RedCap","eRedCap","NR","modem","RFFE","RF front","antenna","AiP",
                "mmWave","sub-6","CA ","EN-DC","DSS","FDD","TDD","OFDM","MIMO","beamforming",
                "module","modul","ODM","OEM","Quectel","Fibocom","Sierra","Telit","u-blox",
                "Rolling Wireless","Kontron","SIMCom","MeiG","美格","Neoway","Gosuncn",
@@ -151,14 +187,18 @@ PRIORITY_KW = ["5G","6G","LTE","RedCap","NR","modem","RFFE","RF front","antenna"
                "China Mobile IoT","中國移動","中移物聯",
                "Qualcomm","Snapdragon","MediaTek","Dimensity","Helio",
                "Qorvo","Skyworks","Murata","MLCC","filter","duplexer","PA ","LNA",
-               "3GPP","Release 18","Release 19","Rel-18","Rel-19","5G-Advanced",
+               "3GPP","Release 18","Release 19","Rel-18","Rel-19","5G-Advanced","6G-Advanced",
+               "AI-RAN","AI RAN","AI-native","agentic RAN","O-RAN","Open RAN",
+               "FR3","7GHz","upper mid-band","golden band","sub-24GHz",
                "spectrum","頻段","頻譜","IoT","cellular","base station","small cell",
+               "NTN","satellite","non-terrestrial","LEO","NB-IoT","eMTC","LPWA",
                "PCB","laminate","Rogers","substrate","packaging","SiP","SoC",
                "Compal","仁寶","Pegatron","和碩","Wistron","緯創","Foxconn","鴻海",
                "Samsung","semiconductor","半導體","wafer","foundry","TSMC","台積電",
                "Digitimes","電子時報","Counterpoint","TechInsights","teardown",
                "TrendForce","集邦","Omdia","ABI Research","Yole","Dell'Oro","IDC",
                "Deloitte","McKinsey","Gartner","KPMG",
+               "SK Hynix","SK hynix","SK Telecom","KT Corp","LG Electronics",
                "經濟日報","工商時報","科技新報","TechNews","embedded","RTOS",
                "market share","forecast","shipment","revenue"]
 
@@ -243,6 +283,184 @@ def enrich_short_snippets(items):
 
 
 # ==========================================================
+# Counterpoint Research — RSS 優先，失敗時自動改爬蟲
+# ==========================================================
+_COUNTERPOINT_RSS_CANDIDATES = [
+    "https://counterpointresearch.com/en/insights/feed/",
+    "https://counterpointresearch.com/feed/",
+    "https://www.counterpointresearch.com/insights/feed/",
+    "https://counterpointresearch.com/en/feed/",
+]
+_COUNTERPOINT_INSIGHTS_URL = "https://counterpointresearch.com/en/insights"
+
+
+def _try_counterpoint_rss():
+    """嘗試多個 RSS URL，回傳第一個有 entries 的 feed；全失敗回傳 None。"""
+    for url in _COUNTERPOINT_RSS_CANDIDATES:
+        try:
+            feed = feedparser.parse(url)
+            entries = getattr(feed, "entries", None) or []
+            if entries:
+                print(f"    ✅ Counterpoint RSS OK → {url} ({len(entries)} entries)")
+                return feed
+        except Exception:
+            pass
+    return None
+
+
+def _scrape_counterpoint_insights(cutoff, per_limit):
+    """
+    爬取 Counterpoint /en/insights 頁面取得文章清單。
+    優先解析 Next.js __NEXT_DATA__ JSON；若找不到則用 HTML regex。
+    回傳與 fetch_news 相容的 dict list（已過濾 cutoff）。
+    """
+    import json as _json
+
+    BASE = "https://counterpointresearch.com"
+    articles = []
+
+    # ── 步驟 1：抓頁面 HTML ──────────────────────────────────
+    try:
+        req = urllib.request.Request(
+            _COUNTERPOINT_INSIGHTS_URL,
+            headers={
+                "User-Agent": _UA,
+                "Accept": "text/html,application/xhtml+xml",
+                "Accept-Language": "en-US,en;q=0.9",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            raw = resp.read(2_000_000)
+        html_text = raw.decode("utf-8", errors="replace")
+    except Exception as e:
+        print(f"    ❌ Counterpoint 頁面抓取失敗: {e}")
+        return []
+
+    # ── 步驟 2：嘗試 Next.js __NEXT_DATA__ JSON ──────────────
+    nd_match = re.search(
+        r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', html_text, re.DOTALL
+    )
+    if nd_match:
+        try:
+            nd = _json.loads(nd_match.group(1))
+
+            def _find_article_list(obj, depth=0):
+                if depth > 10:
+                    return []
+                if isinstance(obj, list) and obj:
+                    first = obj[0]
+                    if isinstance(first, dict) and (
+                        "title" in first or "headline" in first
+                    ) and (
+                        "slug" in first or "link" in first
+                        or "url" in first or "permalink" in first
+                    ):
+                        return obj
+                    for item in obj:
+                        r = _find_article_list(item, depth + 1)
+                        if r:
+                            return r
+                if isinstance(obj, dict):
+                    priority = ["props", "pageProps", "data", "items",
+                                "posts", "articles", "insights", "results"]
+                    for k in priority:
+                        if k in obj:
+                            r = _find_article_list(obj[k], depth + 1)
+                            if r:
+                                return r
+                    for v in obj.values():
+                        r = _find_article_list(v, depth + 1)
+                        if r:
+                            return r
+                return []
+
+            raw_articles = _find_article_list(nd)
+            print(f"    📦 __NEXT_DATA__ 找到 {len(raw_articles)} 筆")
+
+            for a in raw_articles[:per_limit * 2]:
+                title = (
+                    a.get("title") or a.get("headline") or a.get("name") or ""
+                ).strip()
+                slug = (
+                    a.get("slug") or a.get("permalink") or
+                    a.get("link") or a.get("url") or ""
+                ).strip()
+                if not title or not slug:
+                    continue
+                link = slug if slug.startswith("http") else (
+                    f"{BASE}/en/insights/{slug.lstrip('/')}" if slug else ""
+                )
+                date_str = (
+                    a.get("publishedAt") or a.get("published_at") or
+                    a.get("date") or a.get("createdAt") or ""
+                )
+                dt = _parse_dt(date_str) if date_str else None
+                snippet = (
+                    a.get("excerpt") or a.get("summary") or
+                    a.get("description") or a.get("intro") or ""
+                )
+                snippet = re.sub(r"<[^>]+>", " ", snippet).strip()
+                articles.append({
+                    "title": title, "link": link,
+                    "dt": dt, "snippet": snippet,
+                })
+        except Exception as e:
+            print(f"    ⚠️ __NEXT_DATA__ 解析失敗: {e}")
+
+    # ── 步驟 3：HTML regex 備援 ──────────────────────────────
+    if not articles:
+        print("    🔍 改用 HTML regex 解析...")
+        card_pattern = re.compile(
+            r'href="(/en/insights/[^"#?]{3,})"[^>]*>'
+            r'(?:(?!</a>).)*?'
+            r'([A-Z][^<]{15,})',
+            re.DOTALL,
+        )
+        seen_slugs: set = set()
+        for m in card_pattern.finditer(html_text):
+            slug, raw_title = m.group(1), m.group(2)
+            title = re.sub(r"\s+", " ", raw_title).strip()
+            if len(title) < 15 or slug in seen_slugs:
+                continue
+            seen_slugs.add(slug)
+            articles.append({
+                "title": title,
+                "link": BASE + slug,
+                "dt": None,
+                "snippet": "",
+            })
+        time_tags = re.findall(r'<time[^>]+datetime="([^"]+)"', html_text)
+        for i, dt_str in enumerate(time_tags):
+            if i >= len(articles):
+                break
+            articles[i]["dt"] = _parse_dt(dt_str)
+        print(f"    🔍 HTML regex 找到 {len(articles)} 筆")
+
+    # ── 步驟 4：cutoff 過濾 + 組裝 ─────────────────────────
+    _ID_BASE = 900_000
+    result = []
+    for i, a in enumerate(articles[:per_limit]):
+        dt = a.get("dt")
+        if dt is not None and dt < cutoff:
+            continue
+        pub = f"{dt:%Y-%m-%d %H:%M}" if dt else "UNKNOWN"
+        if pub == "UNKNOWN" and not ALLOW_UNKNOWN_DATE:
+            continue
+        if _should_exclude(a["title"], a.get("snippet", "")):
+            continue
+        result.append({
+            "id":         _ID_BASE + i,
+            "cat":        "CAT6",
+            "source":     "Counterpoint Research",
+            "title_orig": a["title"],
+            "snippet":    a.get("snippet", "")[:2000],
+            "link":       a["link"],
+            "published":  pub,
+        })
+    return result
+
+
+# ==========================================================
 # 抓新聞
 # ==========================================================
 def _parse_dt(s):
@@ -292,24 +510,57 @@ def _extract_rss_content(entry):
 
 def fetch_news(per_limit=PER_SOURCE_LIMIT):
     now = datetime.now(TZ_TAIPEI)
-    cutoff = now.replace(hour=0,minute=0,second=0,microsecond=0) - timedelta(days=1)
+    cutoff = now.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
     print(f"[{now:%Y-%m-%d %H:%M %z}] Scanning {len(NEWS_SOURCES)} sources...")
 
     items, iid, seen = [], 1, set()
-    stats = {"generated_at":f"{now:%Y-%m-%d %H:%M %z}","kept":0,"filtered":0,"per_source":{}}
+    stats = {"generated_at": f"{now:%Y-%m-%d %H:%M %z}", "kept": 0, "filtered": 0, "per_source": {}}
 
-    for idx_src, (name,(url,cat)) in enumerate(NEWS_SOURCES.items()):
+    for idx_src, (name, (url, cat)) in enumerate(NEWS_SOURCES.items()):
         kept = 0
         print(f"  [{idx_src+1}/{len(NEWS_SOURCES)}] {name}...", end=" ", flush=True)
+
+        # ── Counterpoint Research：RSS 優先，全部失敗改用爬蟲 ──────
+        if url == "__COUNTERPOINT_FALLBACK__":
+            feed = _try_counterpoint_rss()
+            if feed is None:
+                print("RSS 全失敗，改爬蟲...", flush=True)
+                scraped = _scrape_counterpoint_insights(cutoff, per_limit)
+                for it in scraped:
+                    key = it.get("link") or it.get("title_orig", "")
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    it["id"] = iid          # 重新對齊全域 iid
+                    items.append(it)
+                    iid += 1
+                    kept += 1
+                print(f"    🕷️ 爬蟲取得 {kept} 篇（snippet 不足者由 enrich 補充）", flush=True)
+                stats["per_source"][name] = kept
+                stats["kept"] += kept
+                continue
+            # RSS 有 entries → 直接走下方共用迴圈
+            entries = getattr(feed, "entries", []) or []
+            print(f"{len(entries)} entries (RSS)", flush=True)
+
+        # ── 一般 RSS 來源 ────────────────────────────────────────────
+        else:
+            try:
+                feed = feedparser.parse(url)
+                entries = getattr(feed, "entries", []) or []
+                print(f"{len(entries)} entries", flush=True)
+            except Exception as e:
+                print(f"⚠️ FAILED: {e}", flush=True)
+                stats["per_source"][name] = 0
+                continue
+
+        # ── 共用：把 entries 逐筆塞入 items ────────────────────────
         try:
-            feed = feedparser.parse(url)
-            entries = (getattr(feed,'entries',[]) or [])
-            print(f"{len(entries)} entries", flush=True)
             for entry in entries[:per_limit]:
-                title = (getattr(entry,"title","") or "").strip()
+                title   = (getattr(entry, "title", "") or "").strip()
                 summary = _extract_rss_content(entry)
-                link = (getattr(entry,"link","") or "").strip()
-                dt = _entry_dt(entry)
+                link    = (getattr(entry, "link",  "") or "").strip()
+                dt      = _entry_dt(entry)
                 if dt is None:
                     if not ALLOW_UNKNOWN_DATE: continue
                     pub = "UNKNOWN"
@@ -319,13 +570,17 @@ def fetch_news(per_limit=PER_SOURCE_LIMIT):
                 key = link or title
                 if key in seen: continue
                 seen.add(key)
-                if _should_exclude(title, summary): stats["filtered"]+=1; continue
-                items.append({"id":iid,"source":name,"cat":cat,"title_orig":title,
-                              "snippet":summary[:2000],"link":link,"published":pub})
-                iid+=1; kept+=1
-            stats["per_source"][name]=kept; stats["kept"]+=kept
+                if _should_exclude(title, summary):
+                    stats["filtered"] += 1; continue
+                items.append({"id": iid, "source": name, "cat": cat,
+                              "title_orig": title, "snippet": summary[:2000],
+                              "link": link, "published": pub})
+                iid += 1; kept += 1
+            stats["per_source"][name] = kept
+            stats["kept"] += kept
         except Exception as e:
-            print(f"⚠️ FAILED: {e}", flush=True); stats["per_source"][name]=0
+            print(f"  ⚠️ entry loop FAILED: {e}", flush=True)
+            stats["per_source"][name] = 0
 
     print(f"  ✅ {stats['kept']} kept, {stats['filtered']} filtered")
     return items, stats
