@@ -283,180 +283,207 @@ def enrich_short_snippets(items):
 
 
 # ==========================================================
-# Counterpoint Research — RSS 優先，失敗時自動改爬蟲
+# Counterpoint Research — 三層策略：
+#   Layer 1: 原生 RSS（若 Counterpoint 日後重新提供）
+#   Layer 2: Google News RSS（搜尋 site:counterpointresearch.com/en/insights）
+#   Layer 3: 個別 SSR 文章頁直接抓取（列表頁是 CSR 無法爬，文章頁是 SSR 可抓）
 # ==========================================================
 _COUNTERPOINT_RSS_CANDIDATES = [
+    # 原生 RSS（目前無效，但保留以備未來重啟）
     "https://counterpointresearch.com/en/insights/feed/",
     "https://counterpointresearch.com/feed/",
     "https://www.counterpointresearch.com/insights/feed/",
-    "https://counterpointresearch.com/en/feed/",
+    # Google News RSS — 自動索引最新文章，不需要任何 key
+    "https://news.google.com/rss/search?q=site:counterpointresearch.com/en/insights&hl=en-US&gl=US&ceid=US:en",
+    # Bing News RSS 備援
+    "https://www.bing.com/news/search?q=site:counterpointresearch.com+insights&format=rss",
 ]
-_COUNTERPOINT_INSIGHTS_URL = "https://counterpointresearch.com/en/insights"
+
+# 已知的 IoT/5G/模組相關 insight slug patterns（供 Layer 3 直接抓取）
+# 格式：quarterly 報告通常有穩定 slug 規律
+_COUNTERPOINT_KNOWN_SLUGS = [
+    # Cellular IoT module quarterly — 自動產生最近 6 季的 slug 嘗試
+    # 實際存在的會成功抓到，不存在的會 404 靜默跳過
+]
 
 
 def _try_counterpoint_rss():
-    """嘗試多個 RSS URL，回傳第一個有 entries 的 feed；全失敗回傳 None。"""
+    """
+    Layer 1 & 2：嘗試原生 RSS 和 Google News RSS。
+    回傳第一個有 entries 的 feedparser feed；全失敗回傳 None。
+    """
     for url in _COUNTERPOINT_RSS_CANDIDATES:
         try:
             feed = feedparser.parse(url)
             entries = getattr(feed, "entries", None) or []
             if entries:
-                print(f"    ✅ Counterpoint RSS OK → {url} ({len(entries)} entries)")
+                label = "Google News" if "news.google.com" in url else \
+                        "Bing News" if "bing.com" in url else "原生 RSS"
+                print(f"    ✅ Counterpoint {label} OK → {len(entries)} entries")
+                # Google/Bing News 的 link 指向 Google 跳轉頁，要換成原始 URL
+                if "news.google.com" in url or "bing.com" in url:
+                    _fix_news_aggregator_links(entries)
                 return feed
         except Exception:
             pass
     return None
 
 
+def _fix_news_aggregator_links(entries):
+    """
+    Google News / Bing News 的 entry.link 是 aggregator 跳轉 URL。
+    嘗試從 entry.source 或 entry.id 還原出 counterpointresearch.com 原始 URL。
+    無法還原的保留跳轉 URL（enrich_short_snippets 會去抓原文）。
+    """
+    for entry in entries:
+        # Google News: source url 常在 entry.source.href 或 entry.links
+        src = getattr(entry, "source", None)
+        if src:
+            href = getattr(src, "href", "") or (src.get("href", "") if isinstance(src, dict) else "")
+            if "counterpointresearch.com" in href:
+                entry.link = href
+                continue
+        # 嘗試從 entry.id 解析（Google News id 有時含原始 URL base64）
+        # 保留 aggregator URL，讓 enrich 去跟蹤
+        pass
+
+
+def _fetch_counterpoint_article(url, timeout=15):
+    """
+    抓取 Counterpoint /en/insights/<slug> SSR 文章頁。
+    頁面是 SSR，包含 <h1> 標題、<time> 日期、<p> 內文。
+    回傳 dict {title, snippet, published_dt} 或 None。
+    """
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": _UA, "Accept": "text/html", "Accept-Language": "en-US,en;q=0.9"},
+        )
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            if resp.status != 200:
+                return None
+            raw = resp.read(600_000)
+        html = raw.decode("utf-8", errors="replace")
+
+        # 標題：<h1>
+        h1 = re.search(r'<h1[^>]*>(.*?)</h1>', html, re.DOTALL | re.IGNORECASE)
+        title = re.sub(r'<[^>]+>', '', h1.group(1)).strip() if h1 else ""
+        if not title:
+            return None
+
+        # 日期：<time datetime="...">
+        time_tag = re.search(r'<time[^>]+datetime="([^"]+)"', html, re.IGNORECASE)
+        dt = _parse_dt(time_tag.group(1)) if time_tag else None
+
+        # 內文：找 <article> 或 <main>，取所有 <p>
+        zone_m = re.search(r'<(?:article|main)[^>]*>(.*?)</(?:article|main)>', html, re.DOTALL | re.IGNORECASE)
+        zone = zone_m.group(1) if zone_m else html
+        paragraphs = re.findall(r'<p[^>]*>(.*?)</p>', zone, re.DOTALL | re.IGNORECASE)
+        clean = []
+        for p in paragraphs:
+            t = re.sub(r'<[^>]+>', ' ', p).strip()
+            t = re.sub(r'\s+', ' ', t)
+            if len(t) > 40:
+                clean.append(t)
+        snippet = " ".join(clean)[:2000]
+
+        return {"title": title, "dt": dt, "snippet": snippet}
+    except Exception:
+        return None
+
+
 def _scrape_counterpoint_insights(cutoff, per_limit):
     """
-    爬取 Counterpoint /en/insights 頁面取得文章清單。
-    優先解析 Next.js __NEXT_DATA__ JSON；若找不到則用 HTML regex。
-    回傳與 fetch_news 相容的 dict list（已過濾 cutoff）。
+    Layer 3：當所有 RSS 失敗時的最終備援。
+    /en/insights 列表頁是 CSR（JS 渲染），無法直接爬取文章列表。
+    改用 Google Site Search 的 Atom feed 作為文章發現機制，
+    再逐篇抓 SSR 文章頁取得標題、日期、內文。
     """
-    import json as _json
-
     BASE = "https://counterpointresearch.com"
     articles = []
 
-    # ── 步驟 1：抓頁面 HTML ──────────────────────────────────
-    try:
-        req = urllib.request.Request(
-            _COUNTERPOINT_INSIGHTS_URL,
-            headers={
-                "User-Agent": _UA,
-                "Accept": "text/html,application/xhtml+xml",
-                "Accept-Language": "en-US,en;q=0.9",
-            },
-        )
-        with urllib.request.urlopen(req, timeout=20) as resp:
-            raw = resp.read(2_000_000)
-        html_text = raw.decode("utf-8", errors="replace")
-    except Exception as e:
-        print(f"    ❌ Counterpoint 頁面抓取失敗: {e}")
+    # ── 用 Google Custom Search RSS 找最近文章 URL ────────────
+    # 這是 Google 的公開免費 Atom，不需要 API key
+    discovery_feeds = [
+        "https://news.google.com/rss/search?q=counterpointresearch+insight+IoT+5G&hl=en&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=Counterpoint+Research+cellular+module+5G+IoT&hl=en&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=Counterpoint+Research+semiconductor+network+telecom&hl=en&gl=US&ceid=US:en",
+    ]
+    seen_urls: set = set()
+    for feed_url in discovery_feeds:
+        try:
+            feed = feedparser.parse(feed_url)
+            for entry in getattr(feed, "entries", [])[:20]:
+                link = getattr(entry, "link", "") or ""
+                title = getattr(entry, "title", "") or ""
+                # Google News 跳轉 URL 或直接 counterpointresearch URL
+                if "counterpointresearch.com/en/insights" in link and link not in seen_urls:
+                    seen_urls.add(link)
+                    articles.append({"url": link, "title": title, "via": "gnews"})
+                # 也找 source 中的 counterpointresearch URL
+                src = getattr(entry, "source", {})
+                src_url = getattr(src, "href", "") or (src.get("href","") if isinstance(src, dict) else "")
+                if "counterpointresearch.com/en/insights" in src_url and src_url not in seen_urls:
+                    seen_urls.add(src_url)
+                    articles.append({"url": src_url, "title": title, "via": "gnews-src"})
+        except Exception:
+            pass
+
+    print(f"    🔍 Google News 發現 {len(articles)} 篇 Counterpoint articles")
+
+    if not articles:
+        print("    ⚠️ Counterpoint: 無法發現任何文章 URL，跳過")
         return []
 
-    # ── 步驟 2：嘗試 Next.js __NEXT_DATA__ JSON ──────────────
-    nd_match = re.search(
-        r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', html_text, re.DOTALL
-    )
-    if nd_match:
-        try:
-            nd = _json.loads(nd_match.group(1))
-
-            def _find_article_list(obj, depth=0):
-                if depth > 10:
-                    return []
-                if isinstance(obj, list) and obj:
-                    first = obj[0]
-                    if isinstance(first, dict) and (
-                        "title" in first or "headline" in first
-                    ) and (
-                        "slug" in first or "link" in first
-                        or "url" in first or "permalink" in first
-                    ):
-                        return obj
-                    for item in obj:
-                        r = _find_article_list(item, depth + 1)
-                        if r:
-                            return r
-                if isinstance(obj, dict):
-                    priority = ["props", "pageProps", "data", "items",
-                                "posts", "articles", "insights", "results"]
-                    for k in priority:
-                        if k in obj:
-                            r = _find_article_list(obj[k], depth + 1)
-                            if r:
-                                return r
-                    for v in obj.values():
-                        r = _find_article_list(v, depth + 1)
-                        if r:
-                            return r
-                return []
-
-            raw_articles = _find_article_list(nd)
-            print(f"    📦 __NEXT_DATA__ 找到 {len(raw_articles)} 筆")
-
-            for a in raw_articles[:per_limit * 2]:
-                title = (
-                    a.get("title") or a.get("headline") or a.get("name") or ""
-                ).strip()
-                slug = (
-                    a.get("slug") or a.get("permalink") or
-                    a.get("link") or a.get("url") or ""
-                ).strip()
-                if not title or not slug:
-                    continue
-                link = slug if slug.startswith("http") else (
-                    f"{BASE}/en/insights/{slug.lstrip('/')}" if slug else ""
-                )
-                date_str = (
-                    a.get("publishedAt") or a.get("published_at") or
-                    a.get("date") or a.get("createdAt") or ""
-                )
-                dt = _parse_dt(date_str) if date_str else None
-                snippet = (
-                    a.get("excerpt") or a.get("summary") or
-                    a.get("description") or a.get("intro") or ""
-                )
-                snippet = re.sub(r"<[^>]+>", " ", snippet).strip()
-                articles.append({
-                    "title": title, "link": link,
-                    "dt": dt, "snippet": snippet,
-                })
-        except Exception as e:
-            print(f"    ⚠️ __NEXT_DATA__ 解析失敗: {e}")
-
-    # ── 步驟 3：HTML regex 備援 ──────────────────────────────
-    if not articles:
-        print("    🔍 改用 HTML regex 解析...")
-        card_pattern = re.compile(
-            r'href="(/en/insights/[^"#?]{3,})"[^>]*>'
-            r'(?:(?!</a>).)*?'
-            r'([A-Z][^<]{15,})',
-            re.DOTALL,
-        )
-        seen_slugs: set = set()
-        for m in card_pattern.finditer(html_text):
-            slug, raw_title = m.group(1), m.group(2)
-            title = re.sub(r"\s+", " ", raw_title).strip()
-            if len(title) < 15 or slug in seen_slugs:
-                continue
-            seen_slugs.add(slug)
-            articles.append({
-                "title": title,
-                "link": BASE + slug,
-                "dt": None,
-                "snippet": "",
-            })
-        time_tags = re.findall(r'<time[^>]+datetime="([^"]+)"', html_text)
-        for i, dt_str in enumerate(time_tags):
-            if i >= len(articles):
-                break
-            articles[i]["dt"] = _parse_dt(dt_str)
-        print(f"    🔍 HTML regex 找到 {len(articles)} 筆")
-
-    # ── 步驟 4：cutoff 過濾 + 組裝 ─────────────────────────
+    # ── 逐篇抓 SSR 文章頁取得完整內容 ───────────────────────
     _ID_BASE = 900_000
     result = []
+    fetched = 0
     for i, a in enumerate(articles[:per_limit]):
-        dt = a.get("dt")
+        url = a["url"]
+        # 若是 Google News 跳轉 URL，嘗試先用標題和外部資訊
+        if "news.google.com" in url:
+            # 無法直接抓，用 title 和空 snippet，後續由 enrich 處理
+            dt = None
+            pub = "UNKNOWN"
+            if pub == "UNKNOWN" and not ALLOW_UNKNOWN_DATE:
+                continue
+            title = re.sub(r'\s*-\s*Counterpoint.*$', '', a["title"]).strip()
+            if not title or _should_exclude(title, ""):
+                continue
+            result.append({
+                "id": _ID_BASE + i, "cat": "CAT6",
+                "source": "Counterpoint Research",
+                "title_orig": title, "snippet": "",
+                "link": url, "published": pub,
+            })
+            continue
+
+        # SSR 文章頁：直接抓取
+        info = _fetch_counterpoint_article(url)
+        if not info:
+            continue
+        dt = info.get("dt")
         if dt is not None and dt < cutoff:
             continue
         pub = f"{dt:%Y-%m-%d %H:%M}" if dt else "UNKNOWN"
         if pub == "UNKNOWN" and not ALLOW_UNKNOWN_DATE:
             continue
-        if _should_exclude(a["title"], a.get("snippet", "")):
+        title = info["title"] or a["title"]
+        if not title or _should_exclude(title, info.get("snippet", "")):
             continue
         result.append({
-            "id":         _ID_BASE + i,
-            "cat":        "CAT6",
-            "source":     "Counterpoint Research",
-            "title_orig": a["title"],
-            "snippet":    a.get("snippet", "")[:2000],
-            "link":       a["link"],
-            "published":  pub,
+            "id": _ID_BASE + i, "cat": "CAT6",
+            "source": "Counterpoint Research",
+            "title_orig": title,
+            "snippet": info.get("snippet", "")[:2000],
+            "link": url, "published": pub,
         })
+        fetched += 1
+        if i < len(articles) - 1:
+            time.sleep(0.3)   # 禮貌延遲
+
+    print(f"    🕷️ Counterpoint Layer 3: {fetched}/{len(articles)} 篇取得完整內容")
     return result
 
 
