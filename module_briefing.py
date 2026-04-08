@@ -48,6 +48,7 @@ NEWS_SOURCES = {
     "Microwave Journal":      ("https://www.microwavejournal.com/rss/news", "CAT1"),
     "EDN":                    ("https://www.edn.com/feed/", "CAT1"),
     "EE Times":               ("https://www.eetimes.com/feed/", "CAT1"),
+    "EE Times Wireless/RF":   ("https://www.eetimes.com/category/wireless-rf/feed/", "CAT1"),
     "5G Technology World":    ("https://www.5gtechnologyworld.com/feed/", "CAT1"),
     "RF Globalnet":           ("https://www.rfglobalnet.com/rss/rss.ashx", "CAT1"),
     "Electronics Weekly 5G":  ("https://www.electronicsweekly.com/search/5G/feed/rss2", "CAT1"),
@@ -57,6 +58,10 @@ NEWS_SOURCES = {
     "TechBriefs RF":          ("https://www.techbriefs.com/rss/all", "CAT1"),
     "EE Times Europe":        ("https://www.eetimes.eu/feed/", "CAT1"),
     "Microwaves & RF":        ("https://www.mwrf.com/rss", "CAT1"),
+    "EE Times Taiwan":        ("https://www.eettaiwan.com/feed/", "CAT1"),
+    "IEEE Spectrum":          ("https://spectrum.ieee.org/feeds/feed.rss", "CAT1"),
+    "IEEE Comm. Letters":     ("https://ieeexplore.ieee.org/rss/TOC80.XML", "CAT1"),
+    "IEEE Trans. Wireless":   ("https://ieeexplore.ieee.org/rss/TOC8352948.XML", "CAT1"),
 
     # ━━━ CAT2: 產業趨勢與營運商 ━━━
     "Fierce Wireless":        ("https://www.fiercewireless.com/rss/xml", "CAT2"),
@@ -71,6 +76,7 @@ NEWS_SOURCES = {
     "Total Telecom":          ("https://totaltele.com/feed/", "CAT2"),
     "The Fast Mode":          ("https://www.thefastmode.com/feed", "CAT2"),
     "5G Americas":            ("https://www.5gamericas.org/feed/", "CAT2"),
+    "GSA":                    ("https://gsacom.com/news/feed/", "CAT2"),
     "5G-PPP":                 ("https://5g-ppp.eu/feed/", "CAT2"),
     "M2M Now":                ("https://m2mnow.biz/feed/", "CAT2"),
     "ConnectedWorld":         ("https://connectedworld.com/feed/", "CAT2"),
@@ -87,10 +93,15 @@ NEWS_SOURCES = {
     "The Elec":               ("https://www.thelec.net/rss/S1N3.xml", "CAT3"),
     # 日本科技媒體
     "EE Times Japan":         ("https://eetimes.itmedia.co.jp/rss/2.0/eetimes.xml", "CAT1"),
+    "ITmedia Mobile":         ("https://rss.itmedia.co.jp/rss/2.0/mobile.xml", "CAT3"),
+    "ケータイ Watch":          ("https://k-tai.watch.impress.co.jp/data/rss/1.0/ktw/feed.rdf", "CAT3"),
+    "Nikkei xTECH":          ("https://xtech.nikkei.com/rss/index.rdf", "CAT3"),
     "Nikkei Asia Tech":       ("https://asia.nikkei.com/RSS/feed.aspx?t=technology", "CAT2"),
     "NTT Technical Review":   ("https://www.ntt.com/en/journal/rss.xml", "CAT5"),
     # 全球模組五強
-    "Quectel News":           ("https://www.quectel.com/news/feed/", "CAT3"),
+    "Quectel Newsroom":       ("https://www.quectel.com/news/feed/", "CAT3"),             # 移遠 全球市佔第一 / AI 智能模組
+    "Quectel Press":          ("https://www.quectel.com/category/press-releases/feed/", "CAT3"),
+    "Fibocom News":           ("https://www.fibocom.com/en/news/feed/", "CAT3"),          # 廣和通 5G-A / Wi-Fi 8 CPE
     "Fibocom Blog":           ("https://www.fibocom.com/en/blog/feed/", "CAT3"),
     "Telit Cinterion":        ("https://www.telit.com/blog/feed/", "CAT3"),
     "u-blox News":            ("https://www.u-blox.com/en/newsroom/rss.xml", "CAT3"),
@@ -110,8 +121,12 @@ NEWS_SOURCES = {
     "IoT Business News":      ("https://iotbusinessnews.com/feed/", "CAT3"),
 
     # ━━━ CAT4: 關鍵元件供應商 ━━━
-    "Qualcomm OnQ":           ("https://www.qualcomm.com/news/onq/feed/rss", "CAT4"),
+    "Qualcomm Newsroom":      ("https://www.qualcomm.com/news/releases/feed/rss", "CAT4"),  # Press releases
+    "Qualcomm OnQ":           ("https://www.qualcomm.com/news/onq/feed/rss", "CAT4"),       # On-Q Blog
+    "Qualcomm IR News":       ("https://news.google.com/rss/search?q=site%3Ainvestor.qualcomm.com+press+release&hl=en&gl=US&ceid=US:en", "CAT4"),  # IR proxy（原頁無RSS）
     "MediaTek Press":         ("https://corp.mediatek.com/news-events/press-releases/feed", "CAT4"),
+    "MediaTek Blog":          ("https://corp.mediatek.com/news-events/blog/feed", "CAT4"),
+    "Fierce Wireless Qualcomm": ("https://www.fiercewireless.com/tag/qualcomm/rss", "CAT4"), # Qualcomm tag
     "Qorvo Blog":             ("https://www.qorvo.com/design-hub/blog/rss", "CAT4"),
     "Skyworks News":          ("https://www.skyworksinc.com/en/Press-Releases/rss", "CAT4"),
     "Murata News":            ("https://www.murata.com/en-global/api/rss/newsrss", "CAT4"),
@@ -143,6 +158,7 @@ NEWS_SOURCES = {
     "TrendForce 中文":         ("https://www.trendforce.com.tw/presscenter/rss/news.xml", "CAT6"),
     "TechInsights Blog":      ("https://www.techinsights.com/blog/feed", "CAT6"),
     "ABI Research":           ("https://www.abiresearch.com/press/feed/", "CAT6"),
+    "ABI Research IoT HW":   ("https://www.abiresearch.com/category/internet-of-things/iot-hardware/feed/", "CAT6"),
     "Yole Intelligence":      ("https://www.yolegroup.com/feed/", "CAT6"),
     "Dell'Oro Group":         ("https://www.delloro.com/feed/", "CAT6"),
     "Omdia":                  ("https://omdia.tech.informa.com/rss/insights", "CAT6"),
@@ -164,7 +180,7 @@ CAT_META = {
     "CAT2": {"zh":"產業趨勢與營運商","en":"Operators & Trends","color":"#22D3EE","dark":"#164E63","light":"#ECFEFF",
              "icon":"&#127758;","desc":"5G 部署 &middot; 頻段規劃 &middot; 電信策略 &middot; 台灣供應鏈 &middot; 市場預測"},
     "CAT3": {"zh":"競爭對手動態","en":"ODM & Module Vendors","color":"#F87171","dark":"#7F1D1D","light":"#FEF2F2",
-             "icon":"&#127981;","desc":"Quectel &middot; China Mobile IoT &middot; Fibocom &middot; Telit &middot; Rolling Wireless &middot; SIMCom &middot; MeiG &middot; ODM"},
+             "icon":"&#127981;","desc":"Quectel(AI模組/市佔#1) &middot; Fibocom(5G-A/Wi-Fi 8) &middot; China Mobile IoT &middot; Telit &middot; Rolling Wireless &middot; SIMCom &middot; MeiG &middot; ODM"},
     "CAT4": {"zh":"關鍵元件供應商","en":"Key Components","color":"#34D399","dark":"#064E3B","light":"#ECFDF5",
              "icon":"&#128268;","desc":"晶片 Roadmap &middot; RFFE &middot; 被動元件 &middot; 基材"},
     "CAT5": {"zh":"標準與規範","en":"Standards & Spectrum","color":"#FBBF24","dark":"#78350F","light":"#FFFBEB",
@@ -200,7 +216,10 @@ PRIORITY_KW = ["5G","6G","LTE","RedCap","eRedCap","NR","modem","RFFE","RF front"
                "Deloitte","McKinsey","Gartner","KPMG",
                "SK Hynix","SK hynix","SK Telecom","KT Corp","LG Electronics",
                "經濟日報","工商時報","科技新報","TechNews","embedded","RTOS",
-               "market share","forecast","shipment","revenue"]
+               "market share","forecast","shipment","revenue",
+               "IEEE","Transactions","Letters","xTECH","ITmedia","GSA","eettaiwan",
+               "MWC","CES","investor","earnings","press release","Qualcomm IR",
+               "MediaTek CES","MediaTek MWC","Snapdragon Summit","Dimensity Summit"]
 
 def _should_exclude(title, snippet):
     text = (title+" "+snippet).lower()
@@ -408,6 +427,7 @@ def _scrape_counterpoint_insights(cutoff, per_limit):
         "https://news.google.com/rss/search?q=counterpointresearch+insight+IoT+5G&hl=en&gl=US&ceid=US:en",
         "https://news.google.com/rss/search?q=Counterpoint+Research+cellular+module+5G+IoT&hl=en&gl=US&ceid=US:en",
         "https://news.google.com/rss/search?q=Counterpoint+Research+semiconductor+network+telecom&hl=en&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=Counterpoint+Research+IoT+hardware+module+shipment&hl=en&gl=US&ceid=US:en",  # IoT section
     ]
     seen_urls: set = set()
     for feed_url in discovery_feeds:
