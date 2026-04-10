@@ -690,14 +690,34 @@ LINK: <照抄>
 {payload}
 """.strip()
 
+# Model fallback chain：2.5-flash quota 耗盡時自動降級
+GEMINI_MODEL_CHAIN = [
+    "gemini-2.5-flash",   # 免費層 ~20 RPD；付費後無限
+    "gemini-2.0-flash",   # 免費層 1500 RPD（fallback #1）
+    "gemini-1.5-flash",   # 免費層 1500 RPD（fallback #2）
+]
+
 def call_gemini(client, prompt):
-    for attempt in range(1, GEMINI_RETRIES+1):
-        try:
-            resp = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
-            return resp.text or ""
-        except Exception as e:
-            if not any(k in str(e) for k in ["429","500","503","504","timeout","Timed out"]) or attempt==GEMINI_RETRIES: raise
-            time.sleep(min(2**attempt,30)+random.random())
+    last_exc = None
+    for model in GEMINI_MODEL_CHAIN:
+        for attempt in range(1, GEMINI_RETRIES+1):
+            try:
+                resp = client.models.generate_content(model=model, contents=prompt)
+                if model != GEMINI_MODEL_CHAIN[0]:
+                    print(f"  ⚠️  fallback model used: {model}")
+                return resp.text or ""
+            except Exception as e:
+                es = str(e)
+                is_retryable = any(k in es for k in ["500","503","504","timeout","Timed out"])
+                is_quota     = "429" in es
+                if is_quota and attempt == GEMINI_RETRIES:
+                    print(f"  ⚠️  {model} quota exhausted, trying next model...")
+                    last_exc = e
+                    break
+                elif not (is_retryable or is_quota) or attempt == GEMINI_RETRIES:
+                    raise
+                time.sleep(min(2**attempt, 30) + random.random())
+    raise last_exc
 
 
 # ==========================================================
