@@ -48,38 +48,21 @@ NEWS_SOURCES = {
     "Microwave Journal":      ("https://www.microwavejournal.com/rss/news", "CAT1"),
     "EDN":                    ("https://www.edn.com/feed/", "CAT1"),
     "EE Times":               ("https://www.eetimes.com/feed/", "CAT1"),
-    "EE Times Wireless/RF":   ("https://www.eetimes.com/category/wireless-rf/feed/", "CAT1"),
     "5G Technology World":    ("https://www.5gtechnologyworld.com/feed/", "CAT1"),
     "RF Globalnet":           ("https://www.rfglobalnet.com/rss/rss.ashx", "CAT1"),
     "Electronics Weekly 5G":  ("https://www.electronicsweekly.com/search/5G/feed/rss2", "CAT1"),
     "Semiconductor Eng.":     ("https://semiengineering.com/feed/", "CAT1"),
     "FierceElectronics":      ("https://www.fierceelectronics.com/rss/xml", "CAT1"),
     "Embedded.com":           ("https://www.embedded.com/feed/", "CAT1"),
-    "TechBriefs RF":          ("https://www.techbriefs.com/rss/all", "CAT1"),
-    "EE Times Europe":        ("https://www.eetimes.eu/feed/", "CAT1"),
-    "Microwaves & RF":        ("https://www.mwrf.com/rss", "CAT1"),
-    "EE Times Taiwan":        ("https://www.eettaiwan.com/feed/", "CAT1"),
-    "IEEE Spectrum":          ("https://spectrum.ieee.org/feeds/feed.rss", "CAT1"),
-    "IEEE Comm. Letters":     ("https://ieeexplore.ieee.org/rss/TOC80.XML", "CAT1"),
-    "IEEE Trans. Wireless":   ("https://ieeexplore.ieee.org/rss/TOC8352948.XML", "CAT1"),
 
     # ━━━ CAT2: 產業趨勢與營運商 ━━━
     "Fierce Wireless":        ("https://www.fiercewireless.com/rss/xml", "CAT2"),
-    "Fierce Network":         ("https://www.fierce-network.com/rss/xml", "CAT2"),
-    "6GWorld":                ("https://6gworld.com/feed", "CAT2"),
     "Light Reading":          ("https://www.lightreading.com/rss_simple", "CAT2"),
     "Mobile World Live":      ("https://www.mobileworldlive.com/feed/", "CAT2"),
     "RCR Wireless":           ("https://www.rcrwireless.com/feed", "CAT2"),
     "Telecoms.com":           ("https://telecoms.com/feed/", "CAT2"),
     "SDxCentral":             ("https://www.sdxcentral.com/feed/", "CAT2"),
     "Capacity Media":         ("https://www.capacitymedia.com/rss", "CAT2"),
-    "Total Telecom":          ("https://totaltele.com/feed/", "CAT2"),
-    "The Fast Mode":          ("https://www.thefastmode.com/feed", "CAT2"),
-    "5G Americas":            ("https://www.5gamericas.org/feed/", "CAT2"),
-    "GSA":                    ("https://gsacom.com/news/feed/", "CAT2"),
-    "5G-PPP":                 ("https://5g-ppp.eu/feed/", "CAT2"),
-    "M2M Now":                ("https://m2mnow.biz/feed/", "CAT2"),
-    "ConnectedWorld":         ("https://connectedworld.com/feed/", "CAT2"),
     # 台灣供應鏈媒體
     "經濟日報 科技":           ("https://money.udn.com/rssfeed/news/1001/5591/12925", "CAT2"),
     "工商時報 科技":           ("https://ctee.com.tw/feed", "CAT2"),
@@ -87,21 +70,8 @@ NEWS_SOURCES = {
 
     # ━━━ CAT3: 競爭對手動態 (ODM / 模組廠) ━━━
     "Digitimes":              ("https://www.digitimes.com/rss/rss.asp", "CAT3"),
-    # 韓國科技媒體
-    "ETNews (Korea)":         ("https://english.etnews.com/rss/allArticle.xml", "CAT3"),
-    "Pulse News Korea":       ("https://pulse.mk.co.kr/rss/", "CAT3"),
-    "The Elec":               ("https://www.thelec.net/rss/S1N3.xml", "CAT3"),
-    # 日本科技媒體
-    "EE Times Japan":         ("https://eetimes.itmedia.co.jp/rss/2.0/eetimes.xml", "CAT1"),
-    "ITmedia Mobile":         ("https://rss.itmedia.co.jp/rss/2.0/mobile.xml", "CAT3"),
-    "ケータイ Watch":          ("https://k-tai.watch.impress.co.jp/data/rss/1.0/ktw/feed.rdf", "CAT3"),
-    "Nikkei xTECH":          ("https://xtech.nikkei.com/rss/index.rdf", "CAT3"),
-    "Nikkei Asia Tech":       ("https://asia.nikkei.com/RSS/feed.aspx?t=technology", "CAT2"),
-    "NTT Technical Review":   ("https://www.ntt.com/en/journal/rss.xml", "CAT5"),
     # 全球模組五強
-    "Quectel Newsroom":       ("https://www.quectel.com/news/feed/", "CAT3"),             # 移遠 全球市佔第一 / AI 智能模組
-    "Quectel Press":          ("https://www.quectel.com/category/press-releases/feed/", "CAT3"),
-    "Fibocom News":           ("https://www.fibocom.com/en/news/feed/", "CAT3"),          # 廣和通 5G-A / Wi-Fi 8 CPE
+    "Quectel News":           ("https://www.quectel.com/news/feed/", "CAT3"),
     "Fibocom Blog":           ("https://www.fibocom.com/en/blog/feed/", "CAT3"),
     "Telit Cinterion":        ("https://www.telit.com/blog/feed/", "CAT3"),
     "u-blox News":            ("https://www.u-blox.com/en/newsroom/rss.xml", "CAT3"),
@@ -117,54 +87,32 @@ NEWS_SOURCES = {
     # 產業媒體（模組/IoT 專題）
     "IoT World Today":        ("https://www.iotworldtoday.com/feed", "CAT3"),
     "IoT For All":            ("https://www.iotforall.com/feed", "CAT3"),
-    "IoT Now":                ("https://iot-now.com/feed/", "CAT3"),
-    "IoT Business News":      ("https://iotbusinessnews.com/feed/", "CAT3"),
 
     # ━━━ CAT4: 關鍵元件供應商 ━━━
-    "Qualcomm Newsroom":      ("https://www.qualcomm.com/news/releases/feed/rss", "CAT4"),  # Press releases
-    "Qualcomm OnQ":           ("https://www.qualcomm.com/news/onq/feed/rss", "CAT4"),       # On-Q Blog
-    "Qualcomm IR News":       ("https://news.google.com/rss/search?q=site%3Ainvestor.qualcomm.com+press+release&hl=en&gl=US&ceid=US:en", "CAT4"),  # IR proxy（原頁無RSS）
+    "Qualcomm OnQ":           ("https://www.qualcomm.com/news/onq/feed/rss", "CAT4"),
     "MediaTek Press":         ("https://corp.mediatek.com/news-events/press-releases/feed", "CAT4"),
-    "MediaTek Blog":          ("https://corp.mediatek.com/news-events/blog/feed", "CAT4"),
-    "Fierce Wireless Qualcomm": ("https://www.fiercewireless.com/tag/qualcomm/rss", "CAT4"), # Qualcomm tag
     "Qorvo Blog":             ("https://www.qorvo.com/design-hub/blog/rss", "CAT4"),
     "Skyworks News":          ("https://www.skyworksinc.com/en/Press-Releases/rss", "CAT4"),
     "Murata News":            ("https://www.murata.com/en-global/api/rss/newsrss", "CAT4"),
     "TDK News":               ("https://www.tdk.com/en/news_center/press/rss", "CAT4"),
     "Keysight Blog":          ("https://blogs.keysight.com/feed/", "CAT4"),
     "Tom's Hardware":         ("https://www.tomshardware.com/feeds/all", "CAT4"),
-    # IoT 晶片 / 模組核心元件供應商
-    "Nordic Semiconductor":   ("https://www.nordicsemi.com/News?format=rss", "CAT4"),
-    "Sequans Comms":          ("https://www.sequans.com/press-releases/feed/", "CAT4"),
-    "Digi International":     ("https://www.digi.com/blog/rss", "CAT4"),
 
     # ━━━ CAT5: 標準與規範 ━━━
     "3GPP News":              ("https://www.3gpp.org/news-events/rss", "CAT5"),
     "ETSI":                   ("https://www.etsi.org/newsroom/rss", "CAT5"),
     "Wi-Fi Alliance":         ("https://www.wi-fi.org/news-events/newsroom/feed", "CAT5"),
     "GSMA News":              ("https://www.gsma.com/newsroom/rss/", "CAT5"),
-    # SEMI 官網無標準 RSS；改用 PR Newswire SEMI tag feed 作替代
-    "SEMI (PRN)":             ("https://www.prnewswire.com/rss/news-releases-list.rss?tagid=semi", "CAT5"),
-    # ESA 歐洲太空總署 — 衛星通訊 / NTN / 太空 IoT
-    "ESA Connectivity":       ("https://www.esa.int/rssfeed/Our_Activities/Connectivity_and_Secure_Communications", "CAT5"),
-    # Science|Business — EU Horizon 研發政策與資金動態（半導體/6G/IoT 計畫）
-    "Science|Business":       ("https://sciencebusiness.net/feed", "CAT5"),
-    # LPWAN 與短距離連接標準組織
-    "LoRa Alliance":          ("https://lora-alliance.org/feed/", "CAT5"),
-    "CSA (Matter/Zigbee)":    ("https://csa-iot.org/feed/", "CAT5"),
 
     # ━━━ CAT6: 市場研究與分析機構 ━━━
     "TrendForce":             ("https://www.trendforce.com/presscenter/rss/news.xml", "CAT6"),
     "TrendForce 中文":         ("https://www.trendforce.com.tw/presscenter/rss/news.xml", "CAT6"),
     "TechInsights Blog":      ("https://www.techinsights.com/blog/feed", "CAT6"),
     "ABI Research":           ("https://www.abiresearch.com/press/feed/", "CAT6"),
-    "ABI Research IoT HW":   ("https://www.abiresearch.com/category/internet-of-things/iot-hardware/feed/", "CAT6"),
     "Yole Intelligence":      ("https://www.yolegroup.com/feed/", "CAT6"),
     "Dell'Oro Group":         ("https://www.delloro.com/feed/", "CAT6"),
     "Omdia":                  ("https://omdia.tech.informa.com/rss/insights", "CAT6"),
-    # Counterpoint Research — RSS 由程式動態決定（見 _try_counterpoint_rss）
-    # 此欄位僅作 placeholder，fetch_news 會攔截並走 fallback 流程
-    "Counterpoint Research":  ("__COUNTERPOINT_FALLBACK__", "CAT6"),
+    "Counterpoint Research":  ("https://www.counterpointresearch.com/insights/feed/", "CAT6"),
     "IoT Analytics":          ("https://iot-analytics.com/feed/", "CAT6"),
     "IDC Blog":               ("https://blogs.idc.com/feed/", "CAT6"),
     # 管理顧問 — 產業展望報告
@@ -180,7 +128,7 @@ CAT_META = {
     "CAT2": {"zh":"產業趨勢與營運商","en":"Operators & Trends","color":"#22D3EE","dark":"#164E63","light":"#ECFEFF",
              "icon":"&#127758;","desc":"5G 部署 &middot; 頻段規劃 &middot; 電信策略 &middot; 台灣供應鏈 &middot; 市場預測"},
     "CAT3": {"zh":"競爭對手動態","en":"ODM & Module Vendors","color":"#F87171","dark":"#7F1D1D","light":"#FEF2F2",
-             "icon":"&#127981;","desc":"Quectel(AI模組/市佔#1) &middot; Fibocom(5G-A/Wi-Fi 8) &middot; China Mobile IoT &middot; Telit &middot; Rolling Wireless &middot; SIMCom &middot; MeiG &middot; ODM"},
+             "icon":"&#127981;","desc":"Quectel &middot; China Mobile IoT &middot; Fibocom &middot; Telit &middot; Rolling Wireless &middot; SIMCom &middot; MeiG &middot; ODM"},
     "CAT4": {"zh":"關鍵元件供應商","en":"Key Components","color":"#34D399","dark":"#064E3B","light":"#ECFDF5",
              "icon":"&#128268;","desc":"晶片 Roadmap &middot; RFFE &middot; 被動元件 &middot; 基材"},
     "CAT5": {"zh":"標準與規範","en":"Standards & Spectrum","color":"#FBBF24","dark":"#78350F","light":"#FFFBEB",
@@ -195,7 +143,7 @@ CAT_ORDER = ["CAT6","CAT2","CAT3","CAT1","CAT4","CAT5"]
 # ==========================================================
 EXCLUDE_KW = ["celebrity","red carpet","Grammy","Oscar","box office","movie review",
               "Premier League","Champions League","NBA","NFL","FIFA","recipe","cooking"]
-PRIORITY_KW = ["5G","6G","LTE","RedCap","eRedCap","NR","modem","RFFE","RF front","antenna","AiP",
+PRIORITY_KW = ["5G","6G","LTE","RedCap","NR","modem","RFFE","RF front","antenna","AiP",
                "mmWave","sub-6","CA ","EN-DC","DSS","FDD","TDD","OFDM","MIMO","beamforming",
                "module","modul","ODM","OEM","Quectel","Fibocom","Sierra","Telit","u-blox",
                "Rolling Wireless","Kontron","SIMCom","MeiG","美格","Neoway","Gosuncn",
@@ -203,23 +151,16 @@ PRIORITY_KW = ["5G","6G","LTE","RedCap","eRedCap","NR","modem","RFFE","RF front"
                "China Mobile IoT","中國移動","中移物聯",
                "Qualcomm","Snapdragon","MediaTek","Dimensity","Helio",
                "Qorvo","Skyworks","Murata","MLCC","filter","duplexer","PA ","LNA",
-               "3GPP","Release 18","Release 19","Rel-18","Rel-19","5G-Advanced","6G-Advanced",
-               "AI-RAN","AI RAN","AI-native","agentic RAN","O-RAN","Open RAN",
-               "FR3","7GHz","upper mid-band","golden band","sub-24GHz",
+               "3GPP","Release 18","Release 19","Rel-18","Rel-19","5G-Advanced",
                "spectrum","頻段","頻譜","IoT","cellular","base station","small cell",
-               "NTN","satellite","non-terrestrial","LEO","NB-IoT","eMTC","LPWA",
                "PCB","laminate","Rogers","substrate","packaging","SiP","SoC",
                "Compal","仁寶","Pegatron","和碩","Wistron","緯創","Foxconn","鴻海",
                "Samsung","semiconductor","半導體","wafer","foundry","TSMC","台積電",
                "Digitimes","電子時報","Counterpoint","TechInsights","teardown",
                "TrendForce","集邦","Omdia","ABI Research","Yole","Dell'Oro","IDC",
                "Deloitte","McKinsey","Gartner","KPMG",
-               "SK Hynix","SK hynix","SK Telecom","KT Corp","LG Electronics",
                "經濟日報","工商時報","科技新報","TechNews","embedded","RTOS",
-               "market share","forecast","shipment","revenue",
-               "IEEE","Transactions","Letters","xTECH","ITmedia","GSA","eettaiwan",
-               "MWC","CES","investor","earnings","press release","Qualcomm IR",
-               "MediaTek CES","MediaTek MWC","Snapdragon Summit","Dimensity Summit"]
+               "market share","forecast","shipment","revenue"]
 
 def _should_exclude(title, snippet):
     text = (title+" "+snippet).lower()
@@ -302,212 +243,6 @@ def enrich_short_snippets(items):
 
 
 # ==========================================================
-# Counterpoint Research — 三層策略：
-#   Layer 1: 原生 RSS（若 Counterpoint 日後重新提供）
-#   Layer 2: Google News RSS（搜尋 site:counterpointresearch.com/en/insights）
-#   Layer 3: 個別 SSR 文章頁直接抓取（列表頁是 CSR 無法爬，文章頁是 SSR 可抓）
-# ==========================================================
-_COUNTERPOINT_RSS_CANDIDATES = [
-    # 原生 RSS（目前無效，但保留以備未來重啟）
-    "https://counterpointresearch.com/en/insights/feed/",
-    "https://counterpointresearch.com/feed/",
-    "https://www.counterpointresearch.com/insights/feed/",
-    # Google News RSS — 自動索引最新文章，不需要任何 key
-    "https://news.google.com/rss/search?q=site:counterpointresearch.com/en/insights&hl=en-US&gl=US&ceid=US:en",
-    # Bing News RSS 備援
-    "https://www.bing.com/news/search?q=site:counterpointresearch.com+insights&format=rss",
-]
-
-# 已知的 IoT/5G/模組相關 insight slug patterns（供 Layer 3 直接抓取）
-# 格式：quarterly 報告通常有穩定 slug 規律
-_COUNTERPOINT_KNOWN_SLUGS = [
-    # Cellular IoT module quarterly — 自動產生最近 6 季的 slug 嘗試
-    # 實際存在的會成功抓到，不存在的會 404 靜默跳過
-]
-
-
-def _try_counterpoint_rss():
-    """
-    Layer 1 & 2：嘗試原生 RSS 和 Google News RSS。
-    回傳第一個有 entries 的 feedparser feed；全失敗回傳 None。
-    """
-    for url in _COUNTERPOINT_RSS_CANDIDATES:
-        try:
-            feed = feedparser.parse(url)
-            entries = getattr(feed, "entries", None) or []
-            if entries:
-                label = "Google News" if "news.google.com" in url else \
-                        "Bing News" if "bing.com" in url else "原生 RSS"
-                print(f"    ✅ Counterpoint {label} OK → {len(entries)} entries")
-                # Google/Bing News 的 link 指向 Google 跳轉頁，要換成原始 URL
-                if "news.google.com" in url or "bing.com" in url:
-                    _fix_news_aggregator_links(entries)
-                return feed
-        except Exception:
-            pass
-    return None
-
-
-def _fix_news_aggregator_links(entries):
-    """
-    Google News / Bing News 的 entry.link 是 aggregator 跳轉 URL。
-    嘗試從 entry.source 或 entry.id 還原出 counterpointresearch.com 原始 URL。
-    無法還原的保留跳轉 URL（enrich_short_snippets 會去抓原文）。
-    """
-    for entry in entries:
-        # Google News: source url 常在 entry.source.href 或 entry.links
-        src = getattr(entry, "source", None)
-        if src:
-            href = getattr(src, "href", "") or (src.get("href", "") if isinstance(src, dict) else "")
-            if "counterpointresearch.com" in href:
-                entry.link = href
-                continue
-        # 嘗試從 entry.id 解析（Google News id 有時含原始 URL base64）
-        # 保留 aggregator URL，讓 enrich 去跟蹤
-        pass
-
-
-def _fetch_counterpoint_article(url, timeout=15):
-    """
-    抓取 Counterpoint /en/insights/<slug> SSR 文章頁。
-    頁面是 SSR，包含 <h1> 標題、<time> 日期、<p> 內文。
-    回傳 dict {title, snippet, published_dt} 或 None。
-    """
-    try:
-        req = urllib.request.Request(
-            url,
-            headers={"User-Agent": _UA, "Accept": "text/html", "Accept-Language": "en-US,en;q=0.9"},
-        )
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            if resp.status != 200:
-                return None
-            raw = resp.read(600_000)
-        html = raw.decode("utf-8", errors="replace")
-
-        # 標題：<h1>
-        h1 = re.search(r'<h1[^>]*>(.*?)</h1>', html, re.DOTALL | re.IGNORECASE)
-        title = re.sub(r'<[^>]+>', '', h1.group(1)).strip() if h1 else ""
-        if not title:
-            return None
-
-        # 日期：<time datetime="...">
-        time_tag = re.search(r'<time[^>]+datetime="([^"]+)"', html, re.IGNORECASE)
-        dt = _parse_dt(time_tag.group(1)) if time_tag else None
-
-        # 內文：找 <article> 或 <main>，取所有 <p>
-        zone_m = re.search(r'<(?:article|main)[^>]*>(.*?)</(?:article|main)>', html, re.DOTALL | re.IGNORECASE)
-        zone = zone_m.group(1) if zone_m else html
-        paragraphs = re.findall(r'<p[^>]*>(.*?)</p>', zone, re.DOTALL | re.IGNORECASE)
-        clean = []
-        for p in paragraphs:
-            t = re.sub(r'<[^>]+>', ' ', p).strip()
-            t = re.sub(r'\s+', ' ', t)
-            if len(t) > 40:
-                clean.append(t)
-        snippet = " ".join(clean)[:2000]
-
-        return {"title": title, "dt": dt, "snippet": snippet}
-    except Exception:
-        return None
-
-
-def _scrape_counterpoint_insights(cutoff, per_limit):
-    """
-    Layer 3：當所有 RSS 失敗時的最終備援。
-    /en/insights 列表頁是 CSR（JS 渲染），無法直接爬取文章列表。
-    改用 Google Site Search 的 Atom feed 作為文章發現機制，
-    再逐篇抓 SSR 文章頁取得標題、日期、內文。
-    """
-    BASE = "https://counterpointresearch.com"
-    articles = []
-
-    # ── 用 Google Custom Search RSS 找最近文章 URL ────────────
-    # 這是 Google 的公開免費 Atom，不需要 API key
-    discovery_feeds = [
-        "https://news.google.com/rss/search?q=counterpointresearch+insight+IoT+5G&hl=en&gl=US&ceid=US:en",
-        "https://news.google.com/rss/search?q=Counterpoint+Research+cellular+module+5G+IoT&hl=en&gl=US&ceid=US:en",
-        "https://news.google.com/rss/search?q=Counterpoint+Research+semiconductor+network+telecom&hl=en&gl=US&ceid=US:en",
-        "https://news.google.com/rss/search?q=Counterpoint+Research+IoT+hardware+module+shipment&hl=en&gl=US&ceid=US:en",  # IoT section
-    ]
-    seen_urls: set = set()
-    for feed_url in discovery_feeds:
-        try:
-            feed = feedparser.parse(feed_url)
-            for entry in getattr(feed, "entries", [])[:20]:
-                link = getattr(entry, "link", "") or ""
-                title = getattr(entry, "title", "") or ""
-                # Google News 跳轉 URL 或直接 counterpointresearch URL
-                if "counterpointresearch.com/en/insights" in link and link not in seen_urls:
-                    seen_urls.add(link)
-                    articles.append({"url": link, "title": title, "via": "gnews"})
-                # 也找 source 中的 counterpointresearch URL
-                src = getattr(entry, "source", {})
-                src_url = getattr(src, "href", "") or (src.get("href","") if isinstance(src, dict) else "")
-                if "counterpointresearch.com/en/insights" in src_url and src_url not in seen_urls:
-                    seen_urls.add(src_url)
-                    articles.append({"url": src_url, "title": title, "via": "gnews-src"})
-        except Exception:
-            pass
-
-    print(f"    🔍 Google News 發現 {len(articles)} 篇 Counterpoint articles")
-
-    if not articles:
-        print("    ⚠️ Counterpoint: 無法發現任何文章 URL，跳過")
-        return []
-
-    # ── 逐篇抓 SSR 文章頁取得完整內容 ───────────────────────
-    _ID_BASE = 900_000
-    result = []
-    fetched = 0
-    for i, a in enumerate(articles[:per_limit]):
-        url = a["url"]
-        # 若是 Google News 跳轉 URL，嘗試先用標題和外部資訊
-        if "news.google.com" in url:
-            # 無法直接抓，用 title 和空 snippet，後續由 enrich 處理
-            dt = None
-            pub = "UNKNOWN"
-            if pub == "UNKNOWN" and not ALLOW_UNKNOWN_DATE:
-                continue
-            title = re.sub(r'\s*-\s*Counterpoint.*$', '', a["title"]).strip()
-            if not title or _should_exclude(title, ""):
-                continue
-            result.append({
-                "id": _ID_BASE + i, "cat": "CAT6",
-                "source": "Counterpoint Research",
-                "title_orig": title, "snippet": "",
-                "link": url, "published": pub,
-            })
-            continue
-
-        # SSR 文章頁：直接抓取
-        info = _fetch_counterpoint_article(url)
-        if not info:
-            continue
-        dt = info.get("dt")
-        if dt is not None and dt < cutoff:
-            continue
-        pub = f"{dt:%Y-%m-%d %H:%M}" if dt else "UNKNOWN"
-        if pub == "UNKNOWN" and not ALLOW_UNKNOWN_DATE:
-            continue
-        title = info["title"] or a["title"]
-        if not title or _should_exclude(title, info.get("snippet", "")):
-            continue
-        result.append({
-            "id": _ID_BASE + i, "cat": "CAT6",
-            "source": "Counterpoint Research",
-            "title_orig": title,
-            "snippet": info.get("snippet", "")[:2000],
-            "link": url, "published": pub,
-        })
-        fetched += 1
-        if i < len(articles) - 1:
-            time.sleep(0.3)   # 禮貌延遲
-
-    print(f"    🕷️ Counterpoint Layer 3: {fetched}/{len(articles)} 篇取得完整內容")
-    return result
-
-
-# ==========================================================
 # 抓新聞
 # ==========================================================
 def _parse_dt(s):
@@ -557,57 +292,24 @@ def _extract_rss_content(entry):
 
 def fetch_news(per_limit=PER_SOURCE_LIMIT):
     now = datetime.now(TZ_TAIPEI)
-    cutoff = now.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
+    cutoff = now.replace(hour=0,minute=0,second=0,microsecond=0) - timedelta(days=1)
     print(f"[{now:%Y-%m-%d %H:%M %z}] Scanning {len(NEWS_SOURCES)} sources...")
 
     items, iid, seen = [], 1, set()
-    stats = {"generated_at": f"{now:%Y-%m-%d %H:%M %z}", "kept": 0, "filtered": 0, "per_source": {}}
+    stats = {"generated_at":f"{now:%Y-%m-%d %H:%M %z}","kept":0,"filtered":0,"per_source":{}}
 
-    for idx_src, (name, (url, cat)) in enumerate(NEWS_SOURCES.items()):
+    for idx_src, (name,(url,cat)) in enumerate(NEWS_SOURCES.items()):
         kept = 0
         print(f"  [{idx_src+1}/{len(NEWS_SOURCES)}] {name}...", end=" ", flush=True)
-
-        # ── Counterpoint Research：RSS 優先，全部失敗改用爬蟲 ──────
-        if url == "__COUNTERPOINT_FALLBACK__":
-            feed = _try_counterpoint_rss()
-            if feed is None:
-                print("RSS 全失敗，改爬蟲...", flush=True)
-                scraped = _scrape_counterpoint_insights(cutoff, per_limit)
-                for it in scraped:
-                    key = it.get("link") or it.get("title_orig", "")
-                    if key in seen:
-                        continue
-                    seen.add(key)
-                    it["id"] = iid          # 重新對齊全域 iid
-                    items.append(it)
-                    iid += 1
-                    kept += 1
-                print(f"    🕷️ 爬蟲取得 {kept} 篇（snippet 不足者由 enrich 補充）", flush=True)
-                stats["per_source"][name] = kept
-                stats["kept"] += kept
-                continue
-            # RSS 有 entries → 直接走下方共用迴圈
-            entries = getattr(feed, "entries", []) or []
-            print(f"{len(entries)} entries (RSS)", flush=True)
-
-        # ── 一般 RSS 來源 ────────────────────────────────────────────
-        else:
-            try:
-                feed = feedparser.parse(url)
-                entries = getattr(feed, "entries", []) or []
-                print(f"{len(entries)} entries", flush=True)
-            except Exception as e:
-                print(f"⚠️ FAILED: {e}", flush=True)
-                stats["per_source"][name] = 0
-                continue
-
-        # ── 共用：把 entries 逐筆塞入 items ────────────────────────
         try:
+            feed = feedparser.parse(url)
+            entries = (getattr(feed,'entries',[]) or [])
+            print(f"{len(entries)} entries", flush=True)
             for entry in entries[:per_limit]:
-                title   = (getattr(entry, "title", "") or "").strip()
+                title = (getattr(entry,"title","") or "").strip()
                 summary = _extract_rss_content(entry)
-                link    = (getattr(entry, "link",  "") or "").strip()
-                dt      = _entry_dt(entry)
+                link = (getattr(entry,"link","") or "").strip()
+                dt = _entry_dt(entry)
                 if dt is None:
                     if not ALLOW_UNKNOWN_DATE: continue
                     pub = "UNKNOWN"
@@ -617,17 +319,13 @@ def fetch_news(per_limit=PER_SOURCE_LIMIT):
                 key = link or title
                 if key in seen: continue
                 seen.add(key)
-                if _should_exclude(title, summary):
-                    stats["filtered"] += 1; continue
-                items.append({"id": iid, "source": name, "cat": cat,
-                              "title_orig": title, "snippet": summary[:2000],
-                              "link": link, "published": pub})
-                iid += 1; kept += 1
-            stats["per_source"][name] = kept
-            stats["kept"] += kept
+                if _should_exclude(title, summary): stats["filtered"]+=1; continue
+                items.append({"id":iid,"source":name,"cat":cat,"title_orig":title,
+                              "snippet":summary[:2000],"link":link,"published":pub})
+                iid+=1; kept+=1
+            stats["per_source"][name]=kept; stats["kept"]+=kept
         except Exception as e:
-            print(f"  ⚠️ entry loop FAILED: {e}", flush=True)
-            stats["per_source"][name] = 0
+            print(f"⚠️ FAILED: {e}", flush=True); stats["per_source"][name]=0
 
     print(f"  ✅ {stats['kept']} kept, {stats['filtered']} filtered")
     return items, stats
@@ -657,7 +355,7 @@ def parse_ai(text):
                           "source":gf("SOURCE"),"published":gf("PUBLISHED"),"link":gf("LINK")})
     return items
 
-def make_prompt(payload):
+def make_prompt(payload, count):
     return f"""
 你是一位資深無線通訊與模組產業分析師，專精於 5G/LTE 模組、射頻前端(RFFE)、基頻處理器(BB)、ODM 供應鏈。
 
@@ -676,6 +374,7 @@ def make_prompt(payload):
 6) 如果 SNIPPET 內容極短或完全為空（只有一個標題），寫「資訊不足，請點擊原文閱讀」。
    不要用標題去猜測或推測文章內容。
 7) 明確為娛樂/體育/名人八卦等與產業無關的主題，寫「非本產業相關」。
+8) ⚠️ 系統提示：本次批次共有 {count} 則新聞，請務必「逐一完整翻譯並產生摘要」，絕對不可遺漏或中斷！產出必須剛好 {count} 筆項目。
 
 【格式（--- 分隔）】
 ITEM: <數字>
@@ -693,8 +392,7 @@ LINK: <照抄>
 # Model fallback chain：2.5-flash quota 耗盡時自動降級
 GEMINI_MODEL_CHAIN = [
     "gemini-2.5-flash",   # 免費層 ~20 RPD；付費後無限
-    "gemini-2.0-flash",   # 免費層 1500 RPD（fallback #1）
-    "gemini-1.5-flash",   # 免費層 1500 RPD（fallback #2）
+    "gemini-2.0-flash",   # 免費層 1500 RPD（fallback）
 ]
 
 def call_gemini(client, prompt):
@@ -709,15 +407,18 @@ def call_gemini(client, prompt):
             except Exception as e:
                 es = str(e)
                 is_retryable = any(k in es for k in ["500","503","504","timeout","Timed out"])
-                is_quota     = "429" in es
+                is_quota = "429" in es
+                # 429 可能是 RPM (重試可解) 或 RPD (額度耗盡)
+                # → 先重試，重試滿才切換模型
                 if is_quota and attempt == GEMINI_RETRIES:
-                    print(f"  ⚠️  {model} quota exhausted, trying next model...")
+                    print(f"  ⚠️  {model} quota exhausted after retries, trying next model...")
                     last_exc = e
                     break
-                elif not (is_retryable or is_quota) or attempt == GEMINI_RETRIES:
-                    raise
+                if not (is_retryable or is_quota) or attempt == GEMINI_RETRIES:
+                    last_exc = e
+                    break
                 time.sleep(min(2**attempt, 30) + random.random())
-    raise last_exc
+    raise last_exc if last_exc else RuntimeError("All Gemini models failed")
 
 
 # ==========================================================
@@ -849,8 +550,14 @@ def generate_report(items, stats=None, title_map=None):
         batch = items[start:start+BATCH_SIZE]
         bn = start//BATCH_SIZE+1
         print(f"  Batch {bn}: {start+1}~{start+len(batch)}")
+
+        # ✅ 避免觸發每分鐘 Rate Limit
+        if start > 0:
+            print("  Waiting 15s to avoid rate limits...")
+            time.sleep(15)
+
         try:
-            parsed = parse_ai(call_gemini(client, make_prompt(build_payload(batch))))
+            parsed = parse_ai(call_gemini(client, make_prompt(build_payload(batch), len(batch))))
             if not parsed:
                 for it in batch:
                     all_parsed.append({"item_id":str(it["id"]),"category":it["cat"],"title_zh":it.get("title_orig",""),
