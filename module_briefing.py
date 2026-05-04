@@ -26,6 +26,12 @@ GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
 GMAIL_TO           = os.getenv("GMAIL_TO", "").strip()
 GMAIL_BCC          = os.getenv("GMAIL_BCC", "").strip()
 
+# Telegram 設定（可選；不填則跳過 Telegram 推送）
+# TELEGRAM_CHAT_IDS 支援多群組，用逗號分隔，例如：-1001234567890,-1009876543210,123456789
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+TELEGRAM_CHAT_IDS  = [c.strip() for c in os.getenv("TELEGRAM_CHAT_IDS", "").split(",") if c.strip()]
+TELEGRAM_DISABLE_PREVIEW = os.getenv("TELEGRAM_DISABLE_PREVIEW", "true").lower() == "true"
+
 TZ_TAIPEI = timezone(timedelta(hours=8))
 PER_SOURCE_LIMIT  = int(os.getenv("PER_SOURCE_LIMIT", "30"))
 MAX_TOTAL_ITEMS   = int(os.getenv("MAX_TOTAL_ITEMS", "100"))
@@ -539,10 +545,13 @@ def render_html(items, stats=None):
 
 
 # ==========================================================
-# 批次產出
+# 批次產出：AI 解析（共用給 Email 和 Telegram）
 # ==========================================================
-def generate_report(items, stats=None, title_map=None):
-    if not GEMINI_API_KEY: return "錯誤：缺少 GEMINI_API_KEY"
+def parse_items_with_ai(items, title_map=None):
+    """呼叫 Gemini 解析所有 items，回傳 parsed list（給 Email/Telegram 共用）。"""
+    if not GEMINI_API_KEY:
+        print("❌ 缺少 GEMINI_API_KEY")
+        return []
     client = genai.Client(api_key=GEMINI_API_KEY)
     all_parsed = []
 
@@ -576,7 +585,13 @@ def generate_report(items, stats=None, title_map=None):
             if not it.get("title_orig"):
                 it["title_orig"] = title_map.get(str(it.get("item_id","")), "")
 
-    return render_html(all_parsed, stats=stats)
+    return all_parsed
+
+
+def generate_report(items, stats=None, title_map=None):
+    """[向後相容] 解析 + 產生 HTML，供既有 email 流程使用。"""
+    parsed = parse_items_with_ai(items, title_map=title_map)
+    return render_html(parsed, stats=stats)
 
 
 # ==========================================================
@@ -597,22 +612,219 @@ def send_email(html_body):
         with smtplib.SMTP("smtp.gmail.com", 587) as s:
             s.starttls(); s.login(GMAIL_USER, GMAIL_APP_PASSWORD)
             s.send_message(msg, to_addrs=[GMAIL_USER]+bcc)
-        print("✅ 已發送")
+        print("✅ Email 已發送")
     except Exception as e:
-        print(f"❌ {e}")
+        print(f"❌ Email 失敗: {e}")
+
+
+# ==========================================================
+# Telegram 推送（支援多群組）
+# ==========================================================
+# Telegram HTML 模式只支援這幾個 tag：<b><i><u><s><a><code><pre>
+# 訊息上限 4096 字元；超過要分多則送
+TELEGRAM_MSG_LIMIT = 4000   # 預留 96 字給 header/footer
+
+def _tg_escape(s):
+    """Telegram HTML 模式必須 escape 的三個字元（不能用 html.escape，會壞掉 emoji）"""
+    if not s: return ""
+    return (str(s).replace("&", "&amp;")
+                  .replace("<", "&lt;")
+                  .replace(">", "&gt;"))
+
+
+def render_telegram(parsed_items, stats=None):
+    """
+    將 parsed items 渲染成多則 Telegram 訊息。
+    每則訊息一個分類（過長則切多則）。
+    回傳訊息 list，依序送出。
+    """
+    SKIP = ["資訊不足", "非本產業相關", "非本產業", "與產業無關"]
+    grouped = {c: [] for c in CAT_ORDER}
+    skipped = 0
+    for it in parsed_items:
+        summ = (it.get("summary") or "").strip()
+        if any(p in summ for p in SKIP):
+            skipped += 1; continue
+        c = (it.get("category") or "").strip()
+        if c not in grouped: c = "CAT2"
+        grouped[c].append(it)
+
+    now = datetime.now(TZ_TAIPEI)
+    wd = ["一","二","三","四","五","六","日"][now.weekday()]
+    total = sum(len(v) for v in grouped.values())
+    active = sum(1 for n in (stats or {}).get("per_source", {}).values() if n > 0)
+    filtered = (stats or {}).get("filtered", 0)
+
+    # 各分類圖示（純 emoji 版，比 HTML entity 在 Telegram 顯示更乾淨）
+    cat_emoji = {
+        "CAT1": "⚡", "CAT2": "🌐", "CAT3": "🏭",
+        "CAT4": "🔌", "CAT5": "📜", "CAT6": "📊",
+    }
+
+    messages = []
+
+    # ── 第 1 則：標題卡 ────────────────────────────────────
+    header = (
+        f"📡 <b>MODULE BRIEFING</b>\n"
+        f"<i>{now:%Y-%m-%d} 星期{wd} {now:%H:%M} TPE</i>\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"📰 <b>{total}</b> articles · 🌐 <b>{active}</b> sources · 🚫 {filtered + skipped} filtered\n"
+    )
+    # 各分類數量條
+    bar_parts = []
+    for c in CAT_ORDER:
+        cnt = len(grouped[c])
+        if cnt > 0:
+            bar_parts.append(f"{cat_emoji.get(c,'•')} {CAT_META[c]['zh']}: <b>{cnt}</b>")
+    if bar_parts:
+        header += "\n" + "\n".join(bar_parts)
+    messages.append(header)
+
+    # ── 各分類內容 ────────────────────────────────────────
+    for c in CAT_ORDER:
+        if not grouped[c]:
+            continue
+        meta = CAT_META[c]
+        emoji = cat_emoji.get(c, "•")
+
+        # 每篇文章的 HTML 區塊
+        article_blocks = []
+        for it in grouped[c]:
+            tzh   = _tg_escape(it.get("title_zh", ""))
+            torig = _tg_escape(it.get("title_orig", ""))
+            summ  = _tg_escape(it.get("summary", ""))
+            src   = _tg_escape(it.get("source", ""))
+            pub   = _tg_escape(it.get("published", ""))
+            lnk   = (it.get("link") or "").strip()
+
+            block = "▪️ "
+            if lnk:
+                block += f'<a href="{_tg_escape(lnk)}"><b>{tzh}</b></a>\n'
+            else:
+                block += f"<b>{tzh}</b>\n"
+            if torig and torig != tzh:
+                block += f"   <i>{torig}</i>\n"
+            if summ:
+                # Telegram 訊息要簡潔，summary 截到 280 字
+                if len(summ) > 280:
+                    summ = summ[:280] + "…"
+                block += f"   {summ}\n"
+            block += f"   <code>{src}</code> · {pub}\n"
+            article_blocks.append(block)
+
+        # 該分類的 header
+        cat_header = (
+            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"{emoji} <b>{_tg_escape(meta['zh'])}</b> "
+            f"<i>({_tg_escape(meta['en'])})</i> · <b>{len(grouped[c])}</b>\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n\n"
+        )
+
+        # 累積文章直到達到字數上限就切下一則
+        current = cat_header
+        for blk in article_blocks:
+            if len(current) + len(blk) + 2 > TELEGRAM_MSG_LIMIT:
+                messages.append(current.rstrip())
+                # 後續續篇用簡短 header
+                current = f"{emoji} <b>{_tg_escape(meta['zh'])}</b> <i>(續)</i>\n\n"
+            current += blk + "\n"
+        if current.strip() and current != cat_header:
+            messages.append(current.rstrip())
+
+    # ── 結尾卡 ──────────────────────────────────────────
+    footer = (
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"<i>Powered by Gemini AI · {active} sources</i>\n"
+        f"<i>自動產生之每日產業摘要，僅供內部參考</i>"
+    )
+    messages.append(footer)
+
+    return messages
+
+
+def _tg_post(method, params, timeout=20):
+    """送 POST 到 Telegram Bot API；回傳 (ok, result_or_error)"""
+    import json
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/{method}"
+    data = json.dumps(params).encode("utf-8")
+    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            body = resp.read().decode("utf-8", errors="replace")
+            result = json.loads(body)
+            return result.get("ok", False), result
+    except urllib.error.HTTPError as e:
+        try:
+            err = e.read().decode("utf-8", errors="replace")
+        except Exception:
+            err = str(e)
+        return False, {"error": f"HTTP {e.code}: {err}"}
+    except Exception as e:
+        return False, {"error": str(e)}
+
+
+def send_telegram(messages):
+    """把訊息陣列依序送到所有 TELEGRAM_CHAT_IDS（多群組）。"""
+    if not TELEGRAM_BOT_TOKEN:
+        print("ℹ️  TELEGRAM_BOT_TOKEN 未設定，跳過 Telegram 推送")
+        return
+    if not TELEGRAM_CHAT_IDS:
+        print("ℹ️  TELEGRAM_CHAT_IDS 未設定，跳過 Telegram 推送")
+        return
+    if not messages:
+        print("ℹ️  無 Telegram 訊息可送")
+        return
+
+    print(f"📨 Telegram: 推送 {len(messages)} 則訊息到 {len(TELEGRAM_CHAT_IDS)} 個群組...")
+    total_ok, total_fail = 0, 0
+
+    for chat_id in TELEGRAM_CHAT_IDS:
+        ok_in_chat, fail_in_chat = 0, 0
+        for idx, msg in enumerate(messages):
+            params = {
+                "chat_id": chat_id,
+                "text": msg,
+                "parse_mode": "HTML",
+                "disable_web_page_preview": TELEGRAM_DISABLE_PREVIEW,
+                "disable_notification": idx > 0,   # 只有第一則響鈴
+            }
+            ok, result = _tg_post("sendMessage", params)
+            if ok:
+                ok_in_chat += 1; total_ok += 1
+            else:
+                fail_in_chat += 1; total_fail += 1
+                err = result.get("description") or result.get("error", "unknown")
+                print(f"  ❌ chat={chat_id} msg#{idx+1}: {err[:200]}")
+                # 如果是 flood control，等一下
+                if "Too Many Requests" in str(err) or "retry after" in str(err).lower():
+                    time.sleep(3)
+            # 群組內訊息間隔，避免被 flood
+            time.sleep(0.6)
+        print(f"  chat={chat_id}: ✅ {ok_in_chat} sent, ❌ {fail_in_chat} failed")
+
+    print(f"📨 Telegram total: ✅ {total_ok} sent, ❌ {total_fail} failed")
 
 
 # ==========================================================
 if __name__ == "__main__":
     items, stats = fetch_news()
 
-    # ✅ 關鍵步驟：對內容不足的項目，去抓網頁原文
+    # ✅ 對 snippet 不足的項目去抓網頁原文
     enrich_short_snippets(items)
 
     if MAX_TOTAL_ITEMS > 0 and len(items) > MAX_TOTAL_ITEMS:
         items = items[:MAX_TOTAL_ITEMS]
+
     if not items:
         print("⚠️ 無新聞")
     else:
-        title_map = {str(it["id"]): it.get("title_orig","") for it in items}
-        send_email(generate_report(items, stats=stats, title_map=title_map))
+        title_map = {str(it["id"]): it.get("title_orig", "") for it in items}
+
+        # ── 共用 AI 解析（只呼叫 Gemini 一次）─────────────────
+        parsed = parse_items_with_ai(items, title_map=title_map)
+
+        # ── Email 推送 ────────────────────────────────────
+        send_email(render_html(parsed, stats=stats))
+
+        # ── Telegram 推送（多群組）────────────────────────
+        send_telegram(render_telegram(parsed, stats=stats))
