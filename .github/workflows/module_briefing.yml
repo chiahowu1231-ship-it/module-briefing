@@ -17,8 +17,12 @@ jobs:
       - run: pip install google-genai feedparser
       - run: python module_briefing.py
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GMAIL_USER: ${{ secrets.GMAIL_USER }}
-          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-          GMAIL_BCC: ${{ secrets.GMAIL_BCC }}
-          BATCH_SIZE: '50'
+          GEMINI_API_KEY:      ${{ secrets.GEMINI_API_KEY }}
+          GMAIL_USER:          ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD:  ${{ secrets.GMAIL_APP_PASSWORD }}
+          GMAIL_BCC:           ${{ secrets.GMAIL_BCC }}
+          BATCH_SIZE:          '50'
+          # ── Telegram（可選；不設則跳過）────────────────────
+          TELEGRAM_BOT_TOKEN:  ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          # 多群組用逗號分隔，例如：-1001234567890,-1009876543210,123456789
+          TELEGRAM_CHAT_IDS:   ${{ secrets.TELEGRAM_CHAT_IDS }}
